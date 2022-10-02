@@ -14,4 +14,16 @@ Expected functionality (extended functionality in brackets):
 - (Ability to allow users to make all changes necessary to simulate a combat encounter)
 - (Ability for users to create creatures and effects necessary to simulate a combat encounter)
 
-An example of text with **bold** and *italic* fonts.
+## User Stories:
+As a user, I want to be able to:
+
+- Add a Class to a new Character
+- Set the Race of a new Character
+- Set the Background of a new Character
+- Add a Class to an existing Character
+- Change the Name of an existing Character
+- Change the Race of an existing Character
+- Change the Background of an existing Character
+- Add levels to an existing Character
+- Add Items to a Character's inventory
+- Add Spells to a Character's inventory
