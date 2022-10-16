@@ -1,8 +1,6 @@
 package model;
 
-import enums.ModifierType;
-import enums.ProficiencyType;
-import enums.ScoreType;
+import enums.*;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -21,7 +19,7 @@ public class Proficiency {
     }
 
     public Proficiency(ScoreType score, BigDecimal multiplier) {
-        type = ProficiencyType.SKILL;
+        type = ProficiencyType.SCORE;
         this.score = score;
         this.multiplier = multiplier;
         this.item = null;
@@ -31,7 +29,7 @@ public class Proficiency {
     //EFFECTS: returns a HashMap compatible with Character score handling
     public HashMap<ScoreType, Modifier> generateScoreMap(BigDecimal proficiencyScore) {
         HashMap<ScoreType, Modifier> result = new HashMap<>();
-        if (type.equals(ProficiencyType.SKILL)) {
+        if (type.equals(ProficiencyType.SCORE)) {
             result.put(score, new Modifier(ModifierType.ADD, proficiencyScore.multiply(multiplier)));
         }
         return result;
@@ -47,12 +45,14 @@ public class Proficiency {
         return type;
     }
 
-    public ScoreType getScore() {
-        return score;
-    }
-
-    public String getItem() {
-        return item;
+    public String getProficiencyName() {
+        switch (type) {
+            case SCORE:
+                return score.name();
+            case ITEM:
+                return item;
+        }
+        return null;
     }
 
     public BigDecimal getMultiplier() {

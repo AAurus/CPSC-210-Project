@@ -1,210 +1,275 @@
 package model;
 
-import enums.ModifierType;
-import enums.ScoreType;
+import enums.*;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class Character {
-    /// A representation of the various information recorded for a D&D Character.
-    private int[] rolledStats = new int[6];
-    private HashMap<ScoreType, BigDecimal> scores = new HashMap<>();
+    /// A representation of a DnD Character.
+
+    private HashMap<ScoreType, Integer> rolledAbilityScores;
+    private HashMap<ScoreType, Integer> abilityScores;
+    private HashMap<ScoreType, Integer> skillThrowBonuses;
+    private HashMap<StatType, Integer> stats;
+    private HashMap<Integer, Integer> hitDice;
     private CharRace race;
     private CharBackground background;
-    private ArrayList<CharClass> classes = new ArrayList<>();
-    private String name;
-    private String description;
+    private ArrayList<CharClass> classes;
+    private ArrayList<InventoryItem> equippedItems;
+    private ArrayList<InventoryItem> carriedItems;
+    private ArrayList<InventoryItem> inventoryItems;
 
-    public Character(String name, int[] rolledStats, CharRace race, CharBackground background,
-                     CharClass startingClass) {
-        this.name = name;
-        for (int i = 0; i < 6; i++) {
-            this.rolledStats[i] = rolledStats[i];
-        }
-        this.race = race;
-        this.background = background;
-        this.classes.add(startingClass);
-        initStats();
+    public Character(int strength, int dexterity, int constitution,
+                     int intelligence, int wisdom, int charisma) {
+        loadBaseScores(strength, dexterity, constitution, intelligence, wisdom, charisma);
         updateScores();
-        this.description = "";
-    }
-
-    public Character(String name, int[] rolledStats, CharRace race, CharBackground background, CharClass startingClass,
-                     String description) {
-        this.name = name;
-        for (int i = 0; i < 6; i++) {
-            this.rolledStats[i] = rolledStats[i];
-        }
-        this.race = race;
-        this.background = background;
-        this.classes.add(startingClass);
-        initStats();
-        updateScores();
-        this.description = description;
+        updateStats();
     }
 
     //MODIFIES: this
-    //EFFECTS: initializes scores from rolled stats
-    private void initStats() {
-        for (ScoreType st : ScoreType.values()) {
-            String stGroup = st.name().substring(0,2);
-            switch (stGroup) {
-                case "STR":
-                    scores.put(st, new BigDecimal(rolledStats[0]));
-                    break;
-                case "DEX":
-                    scores.put(st, new BigDecimal(rolledStats[1]));
-                    break;
-                case "CON":
-                    scores.put(st, new BigDecimal(rolledStats[2]));
-                    break;
-                case "INT":
-                    scores.put(st, new BigDecimal(rolledStats[3]));
-                    break;
-                case "WIS":
-                    scores.put(st, new BigDecimal(rolledStats[4]));
-                    break;
-                case "CHR":
-                    scores.put(st, new BigDecimal(rolledStats[5]));
+    //EFFECTS: loads base scores into this
+    private void loadBaseScores(int strength, int dexterity, int constitution,
+                                int intelligence, int wisdom, int charisma) {
+        rolledAbilityScores.put(ScoreType.STRENGTH, strength);
+        rolledAbilityScores.put(ScoreType.DEXTERITY, dexterity);
+        rolledAbilityScores.put(ScoreType.CONSTITUTION, constitution);
+        rolledAbilityScores.put(ScoreType.INTELLIGENCE, intelligence);
+        rolledAbilityScores.put(ScoreType.WISDOM, wisdom);
+        rolledAbilityScores.put(ScoreType.CHARISMA, charisma);
+    }
+
+    //MODIFIES: this
+    //EFFECTS: updates ability scores from race, background, classes, base scores
+    private void updateScores() {
+        ArrayList<HashMap<ScoreType, Modifier>> allScoreMods = getAllScoreMods();
+        ArrayList<HashMap<ScoreType, Modifier>> allProfMods = getAllScoreProficiencyMods();
+
+        HashMap<ScoreType, Modifier> baseAbilityScores = ScoreType.initBaseScoreMods(rolledAbilityScores);
+        ScoreType.applyAllScoresToList(baseAbilityScores, allScoreMods, ScoreType.BASE_SCORES);
+        ScoreType.applyAllScoresToList(baseAbilityScores, allProfMods, ScoreType.BASE_SCORES);
+        abilityScores = ScoreType.finalizeScoreMods(baseAbilityScores);
+
+        HashMap<ScoreType, Modifier> checkScores = ScoreType.initCheckScoreMods(abilityScores);
+        ScoreType.applyAllScoresToList(checkScores, allScoreMods, ScoreType.CHECK_SCORES);
+        ScoreType.applyAllScoresToList(checkScores, allProfMods, ScoreType.CHECK_SCORES);
+        skillThrowBonuses = ScoreType.finalizeScoreMods(checkScores);
+    }
+
+    //MODIFIES: this
+    //EFFECTS: updates stats according to ability scores
+    private void updateStats() {
+        ArrayList<HashMap<StatType, Modifier>> allStatMods = getAllStatMods();
+        Modifier conPerLevel = new Modifier(1);
+        Modifier walkSpeed = new Modifier(0);
+        for (HashMap<StatType, Modifier> mods : allStatMods) {
+            if (mods.keySet().contains(StatType.HIT_POINT_CON_PER_LEVEL)) {
+                conPerLevel.apply(mods.get(StatType.HIT_POINT_CON_PER_LEVEL));
+            }
+            if (mods.keySet().contains(StatType.WALK_SPEED)) {
+                walkSpeed.apply(mods.get(StatType.WALK_SPEED));
             }
         }
+        HashMap<StatType, Modifier> charDeriveMap = new HashMap<>();
+        charDeriveMap.put(StatType.MAX_HIT_POINTS, new Modifier(ModifierType.BASE, conPerLevel.getValue().multiply(
+                new BigDecimal(skillThrowBonuses.get(ScoreType.CON_CHECK) * getCharacterLevel()))));
+        charDeriveMap.put(StatType.INITIATIVE_BONUS, new Modifier(skillThrowBonuses.get(ScoreType.DEX_CHECK)));
+        charDeriveMap.put(StatType.DEXTERITY_ARMOR_BONUS, new Modifier(skillThrowBonuses.get(ScoreType.DEX_CHECK)));
+        charDeriveMap.put(StatType.CARRY_CAPACITY, new Modifier(abilityScores.get(ScoreType.STRENGTH) * 15));
+        charDeriveMap.put(StatType.PROFICIENCY_BONUS, new Modifier(calcProficiencyBonus()));
+        charDeriveMap.put(StatType.WALK_SPEED, walkSpeed);
+        HashMap<StatType, Modifier> finalApplyMap = StatType.deriveStats(charDeriveMap);
+        stats = StatType.finalizeStats(StatType.applyAllStatsToList(finalApplyMap, allStatMods,
+                StatType.getNonDerivingStats()));
     }
 
-    //MODIFIES: this
-    //EFFECTS: applies all score changes from race and classes.
-    private void updateScores() {
-        HashMap<ScoreType, Modifier> newScores = new HashMap<>();
-        ArrayList<HashMap<ScoreType, Modifier>> addScores = new ArrayList<>();
-        for (ScoreType st : ScoreType.values()) {
-            newScores.put(st, new Modifier(ModifierType.BASE, scores.get(st)));
+    //EFFECTS: returns all score modifiers from applied to this
+    private ArrayList<HashMap<ScoreType, Modifier>> getAllScoreMods() {
+        ArrayList<HashMap<ScoreType, Modifier>> result = new ArrayList<>();
+
+        if (race != null) {
+            result.addAll(race.getAllScores());
+            result.addAll(race.getAllFeatureScoreMods());
         }
-        addScores.addAll(CharacterModifier.getAllScores(race));
-        addScores.addAll(CharacterModifier.getAllScores(background));
-        for (CharClass dc : classes) {
-            addScores.addAll(CharacterModifier.getAllScores(dc));
+        if (background != null) {
+            result.addAll(background.getAllFeatureScoreMods());
+        }
+        for (CharClass cc : classes) {
+            result.addAll(cc.getAllFeatureScoreMods());
+        }
+        for (InventoryItem ii : equippedItems) {
+            result.addAll(ii.getFeature().getAllScoreModifiers());
         }
 
-        newScores = applyAllScores(addScores, newScores);
-        for (ScoreType st : ScoreType.values()) {
-            scores.put(st, newScores.get(st).getValue());
+        return result;
+    }
+
+    //EFFECTS: returns list of all proficiency-based score changes applied to this
+    private ArrayList<HashMap<ScoreType, Modifier>> getAllScoreProficiencyMods() {
+        BigDecimal profBonus = new BigDecimal(calcProficiencyBonus());
+
+        ArrayList<HashMap<ScoreType, Modifier>> result = new ArrayList<>();
+        if (race != null) {
+            result.addAll(race.getAllScoreProficienciesApplied(profBonus));
+        }
+        if (background != null) {
+            result.addAll(background.getAllScoreProficienciesApplied(profBonus));
+        }
+        if (!classes.isEmpty()) {
+            result.addAll(classes.get(0).getAllProficienciesApplied(profBonus, true));
+            for (int i = 1; i < classes.size(); i++) {
+                result.addAll(classes.get(i).getAllProficienciesApplied(profBonus, false));
+            }
+        }
+        for (InventoryItem ii : equippedItems) {
+            result.addAll(ii.getFeature().getAllProficiencyModifiers(profBonus));
+        }
+
+        return result;
+    }
+
+    //EFFECTS: returns list of all stat changes applied to this
+    private ArrayList<HashMap<StatType, Modifier>> getAllStatMods() {
+        ArrayList<HashMap<StatType, Modifier>> result = new ArrayList<>();
+        ArrayList<Feature> features = new ArrayList<>();
+        if (race != null) {
+            features.addAll(race.getFeatures());
+        }
+        if (background != null) {
+            features.addAll(background.getFeatures());
+        }
+        for (CharClass cc : classes) {
+            features.addAll(cc.getAllFeaturesLevelled());
+        }
+        for (InventoryItem ii : equippedItems) {
+            features.add(ii.getFeature());
+        }
+        List<Feature> statFeatures = Feature.getAllReachableFeaturesOfType(features, FeatureType.STAT);
+        for (Feature f : statFeatures) {
+            result.add(f.getStatMod());
+        }
+        return result;
+    }
+
+    //MODIFIES: this
+    //EFFECTS: adds all background and class starter equipment to inventory
+    private void initStarterEquipment() {
+        if (background != null) {
+            inventoryItems.addAll(background.getEquipment());
+        }
+        if (!classes.isEmpty()) {
+            inventoryItems.addAll(classes.get(0).getEquipment());
         }
     }
 
-    public String getName() {
-        return name;
+    public HashMap<ScoreType, Integer> getRolledAbilityScores() {
+        return rolledAbilityScores;
     }
 
-    public String getDescription() {
-        return description;
+    public HashMap<ScoreType, Integer> getAbilityScores() {
+        return abilityScores;
+    }
+
+    public HashMap<ScoreType, Integer> getSkillThrowBonuses() {
+        return skillThrowBonuses;
+    }
+
+    public HashMap<StatType, Integer> getStats() {
+        return stats;
+    }
+
+    public CharRace getRace() {
+        return race;
+    }
+
+    public CharBackground getBackground() {
+        return background;
+    }
+
+    public ArrayList<CharClass> getClasses() {
+        return classes;
+    }
+
+    public int getCharacterLevel() {
+        int result = 0;
+        for (CharClass cc : classes) {
+            result += cc.getLevel();
+        }
+        return result;
+    }
+
+    public int calcProficiencyBonus() {
+        BigDecimal undividedValue = new BigDecimal(getCharacterLevel()).add(new BigDecimal(1));
+        BigDecimal unroundedValue = undividedValue.divide(new BigDecimal(4));
+        return unroundedValue.setScale(0, RoundingMode.FLOOR).intValue();
+    }
+
+    public ArrayList<InventoryItem> getEquippedItems() {
+        return equippedItems;
+    }
+
+    public ArrayList<InventoryItem> getCarriedItems() {
+        return carriedItems;
+    }
+
+    public ArrayList<InventoryItem> getInventoryItems() {
+        return inventoryItems;
+    }
+
+    public void setRace(CharRace race) {
+        this.race = race;
+    }
+
+    public void setBackground(CharBackground background) {
+        this.background = background;
+    }
+
+    public void addEquippedItem(InventoryItem item) {
+        equippedItems.add(item);
+    }
+
+    public void addCarriedItem(InventoryItem item) {
+        carriedItems.add(item);
+    }
+
+    public void addInventoryItem(InventoryItem item) {
+        inventoryItems.add(item);
     }
 
     //MODIFIES: this
-    //EFFECTS: adds a DnD class to this and updates scores, keeping earlier classes at end of list
-    public void addClass(CharClass dndClass) {
-        classes.add(0, dndClass);
-        updateScores();
-    }
-
-    //REQUIRES: dndClass (the actual object itself, not just an identical object) must exist in classes
-    //MODIFIES: this
-    //EFFECTS: removes a CharClass to this and updates scores
-    public void removeClass(CharClass dndClass) {
-        classes.remove(dndClass);
-        updateScores();
-    }
-
-    //MODIFIES: this
-    //EFFECTS: removes the first (latest) CharClass this has that matches the name provided and updates scores
-    public void removeClass(String className) {
-        for (CharClass dc : classes) {
-            if (dc.getName().equals(className)) {
-                classes.remove(dc);
+    //EFFECTS: removes first item from equipped items that matches name
+    public void removeEquippedItem(String itemName) {
+        for (InventoryItem ii : equippedItems) {
+            if (ii.getName().equals(itemName)) {
+                equippedItems.remove(ii);
+                updateScores();
                 break;
             }
         }
-        updateScores();
     }
 
     //MODIFIES: this
-    //EFFECTS: changes this character's race and updates scores to match
-    public void changeRace(CharRace race) {
-        this.race = race;
-        updateScores();
+    //EFFECTS: removes first item from carried items that matches name
+    public void removeCarriedItem(String itemName) {
+        for (InventoryItem ii : carriedItems) {
+            if (ii.getName().equals(itemName)) {
+                carriedItems.remove(ii);
+                break;
+            }
+        }
     }
 
     //MODIFIES: this
-    //EFFECTS: changes this character's background and updates scores to match
-    public void changeBackground(CharBackground background) {
-        this.background = background;
-        updateScores();
-    }
-
-    //REQUIRES: all modifiers in base should be of type BASE, and base should at least have all pairings that
-    //          all elements of apply have
-    //EFFECTS: applies all score changes from ArrayList of HashMap<ScoreType, Modifier> to one base HashMap
-    private static HashMap<ScoreType, Modifier> applyAllScores(ArrayList<HashMap<ScoreType, Modifier>> apply,
-                                                               HashMap<ScoreType, Modifier> base) {
-        HashMap<ScoreType, Modifier> result = new HashMap<>();
-        for (ScoreType st : ScoreType.values()) {
-            result.put(st, base.get(st));
-        }
-
-        for (HashMap<ScoreType, Modifier> score : apply) {
-            result = applyScores(result, score, ModifierType.BASE);
-        }
-
-        for (HashMap<ScoreType, Modifier> score : apply) {
-            result = applyScores(result, score, ModifierType.ADD);
-        }
-
-        for (HashMap<ScoreType, Modifier> score : apply) {
-            result = applyScores(result, score, ModifierType.MULTIPLY);
-        }
-
-        for (HashMap<ScoreType, Modifier> score : apply) {
-            result = applyScores(result, score, ModifierType.MIN);
-        }
-
-        for (HashMap<ScoreType, Modifier> score : apply) {
-            result = applyScores(result, score, ModifierType.MAX);
-        }
-        return result;
-    }
-
-    //REQUIRES: all modifiers in base should be of type BASE, and base should at least have all pairings that apply has
-    //EFFECTS: applies score changes from one HashMap<ScoreType, Modifier> to another
-    private static HashMap<ScoreType, Modifier> applyScores(HashMap<ScoreType, Modifier> base,
-                                                            HashMap<ScoreType, Modifier> apply) {
-        HashMap<ScoreType, Modifier> result = new HashMap<>();
-        for (ScoreType st : ScoreType.values()) {
-            if (base.containsKey(st)) {
-                if (apply.containsKey(st)) {
-                    result.put(st, base.get(st).apply(apply.get(st)));
-                } else {
-                    result.put(st, base.get(st));
-                }
+    //EFFECTS: removes first item from inventory that matches name
+    public void removeInventoryItem(String itemName) {
+        for (InventoryItem ii : inventoryItems) {
+            if (ii.getName().equals(itemName)) {
+                inventoryItems.remove(ii);
+                break;
             }
         }
-        return result;
-    }
-
-    //REQUIRES: all modifiers in base should be of type BASE, and base and apply should have 1:1 match of keys
-    //EFFECTS: applies score changes from one HashMap<ScoreType, Modifier> to another, as long as the modifier is of a
-    //         certain type
-    private static HashMap<ScoreType, Modifier> applyScores(HashMap<ScoreType, Modifier> base,
-                                                            HashMap<ScoreType, Modifier> apply,
-                                                            ModifierType applyType) {
-        HashMap<ScoreType, Modifier> result = new HashMap<>();
-        for (ScoreType st : ScoreType.values()) {
-            if (base.containsKey(st)) {
-                if (apply.containsKey(st) && apply.get(st).getType().equals(applyType)) {
-                    result.put(st, base.get(st).apply(apply.get(st)));
-                } else {
-                    result.put(st, base.get(st));
-                }
-            }
-        }
-        return result;
     }
 }

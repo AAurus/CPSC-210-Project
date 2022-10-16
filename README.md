@@ -26,4 +26,3 @@ As a user, I want to be able to:
 - Change the Background of an existing Character
 - Add levels to an existing Character
 - Add Items to a Character's inventory
-- Add Spells to a Character's inventory
