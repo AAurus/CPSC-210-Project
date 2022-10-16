@@ -53,8 +53,8 @@ public enum ScoreType {
     //EFFECTS: replicates ListOfHelper.listOf(E... elements) for ScoreType
     public static List<ScoreType> listOf(ScoreType... scoreTypes) {
         ArrayList<ScoreType> result = new ArrayList<>();
-        for (ScoreType st : scoreTypes) {
-            result.add(st);
+        for (ScoreType s : scoreTypes) {
+            result.add(s);
         }
         return result;
     }
@@ -63,9 +63,9 @@ public enum ScoreType {
     //EFFECTS: initializes a check modifier HashMap using another HashMap containing base ability scores
     public static HashMap<ScoreType, Modifier> initCheckScoreMods(HashMap<ScoreType, Integer> baseScores) {
         HashMap<ScoreType, Modifier> result = new HashMap<>();
-        for (ScoreType st : ScoreType.CHECK_SCORES) {
-            String stGroup = st.name().substring(0,3);
-            result.put(st, new Modifier(Math.floorDiv((baseScores.get(getBaseScoreFromHeader(stGroup)) - 10), 2)));
+        for (ScoreType s : ScoreType.CHECK_SCORES) {
+            String stGroup = s.name().substring(0,3);
+            result.put(s, new Modifier(Math.floorDiv((baseScores.get(getBaseScoreFromHeader(stGroup)) - 10), 2)));
         }
         return result;
     }
@@ -74,8 +74,8 @@ public enum ScoreType {
     //EFFECTS: initializes a check modifier HashMap using another HashMap containing base ability scores
     public static HashMap<ScoreType, Modifier> initBaseScoreMods(HashMap<ScoreType, Integer> baseScores) {
         HashMap<ScoreType, Modifier> result = generateEmptyScoreMap();
-        for (ScoreType st : BASE_SCORES) {
-            result.put(st, new Modifier(baseScores.get(st)));
+        for (ScoreType s : BASE_SCORES) {
+            result.put(s, new Modifier(baseScores.get(s)));
         }
         return result;
     }
@@ -85,8 +85,8 @@ public enum ScoreType {
     //         same ScoreTypes
     public static HashMap<ScoreType, Integer> finalizeScoreMods(HashMap<ScoreType, Modifier> modifierScores) {
         HashMap<ScoreType, Integer> result = new HashMap<>();
-        for (ScoreType st : modifierScores.keySet()) {
-            result.put(st, modifierScores.get(st).getValue().setScale(0, RoundingMode.FLOOR).intValue());
+        for (ScoreType s : modifierScores.keySet()) {
+            result.put(s, modifierScores.get(s).getValue().setScale(0, RoundingMode.FLOOR).intValue());
         }
         return result;
     }
@@ -121,8 +121,8 @@ public enum ScoreType {
 
     public static HashMap<ScoreType, Modifier> generateEmptyScoreMap() {
         HashMap<ScoreType, Modifier> result = new HashMap<>();
-        for (ScoreType st : ScoreType.values()) {
-            result.put(st, new Modifier(ModifierType.BASE, BigDecimal.ZERO));
+        for (ScoreType s : ScoreType.values()) {
+            result.put(s, new Modifier(ModifierType.BASE, BigDecimal.ZERO));
         }
         return result;
     }
@@ -133,8 +133,8 @@ public enum ScoreType {
     public static HashMap<ScoreType, Modifier> applyAllScoresToAll(HashMap<ScoreType, Modifier> base,
                                                                    List<HashMap<ScoreType, Modifier>> apply) {
         HashMap<ScoreType, Modifier> result = new HashMap<>();
-        for (ScoreType st : ScoreType.values()) {
-            result.put(st, base.get(st));
+        for (ScoreType s : ScoreType.values()) {
+            result.put(s, base.get(s));
         }
         for (int i = 0; i < Modifier.OPERATIONS_ORDER.length; i++) {
             for (HashMap<ScoreType, Modifier> score : apply) {
@@ -151,8 +151,8 @@ public enum ScoreType {
                                                                     List<HashMap<ScoreType, Modifier>> apply,
                                                                     List<ScoreType> scoreTypes) {
         HashMap<ScoreType, Modifier> result = new HashMap<>();
-        for (ScoreType st : scoreTypes) {
-            result.put(st, base.get(st));
+        for (ScoreType s : scoreTypes) {
+            result.put(s, base.get(s));
         }
         for (int i = 0; i < Modifier.OPERATIONS_ORDER.length; i++) {
             for (HashMap<ScoreType, Modifier> score : apply) {
@@ -168,12 +168,12 @@ public enum ScoreType {
     public static HashMap<ScoreType, Modifier> applyScoresToAll(HashMap<ScoreType, Modifier> base,
                                                                 HashMap<ScoreType, Modifier> apply) {
         HashMap<ScoreType, Modifier> result = new HashMap<>();
-        for (ScoreType st : ScoreType.values()) {
-            if (base.containsKey(st)) {
-                if (apply.containsKey(st)) {
-                    result.put(st, base.get(st).apply(apply.get(st)));
+        for (ScoreType s : ScoreType.values()) {
+            if (base.containsKey(s)) {
+                if (apply.containsKey(s)) {
+                    result.put(s, base.get(s).apply(apply.get(s)));
                 } else {
-                    result.put(st, base.get(st));
+                    result.put(s, base.get(s));
                 }
             }
         }
@@ -188,12 +188,12 @@ public enum ScoreType {
                                                            HashMap<ScoreType, Modifier> apply,
                                                            ModifierType applyType) {
         HashMap<ScoreType, Modifier> result = new HashMap<>();
-        for (ScoreType st : ScoreType.values()) {
-            if (base.containsKey(st)) {
-                if (apply.containsKey(st) && apply.get(st).getType().equals(applyType)) {
-                    result.put(st, base.get(st).apply(apply.get(st)));
+        for (ScoreType s : ScoreType.values()) {
+            if (base.containsKey(s)) {
+                if (apply.containsKey(s) && apply.get(s).getType().equals(applyType)) {
+                    result.put(s, base.get(s).apply(apply.get(s)));
                 } else {
-                    result.put(st, base.get(st));
+                    result.put(s, base.get(s));
                 }
             }
         }

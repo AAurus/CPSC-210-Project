@@ -75,9 +75,9 @@ public class CharBackground extends HasFeatures {
     }
 
     public void removeEquipment(String itemName) {
-        for (InventoryItem ii : equipment) {
-            if (ii.getName().equals(itemName)) {
-                equipment.remove(ii);
+        for (InventoryItem i : equipment) {
+            if (i.getName().equals(itemName)) {
+                equipment.remove(i);
                 break;
             }
         }

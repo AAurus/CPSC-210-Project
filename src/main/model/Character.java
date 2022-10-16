@@ -115,11 +115,11 @@ public class Character {
         if (background != null) {
             result.addAll(background.getAllFeatureScoreMods());
         }
-        for (CharClass cc : classes) {
-            result.addAll(cc.getAllFeatureScoreMods());
+        for (CharClass c : classes) {
+            result.addAll(c.getAllFeatureScoreMods());
         }
-        for (InventoryItem ii : equippedItems) {
-            result.addAll(ii.getFeature().getAllScoreModifiers());
+        for (InventoryItem i : equippedItems) {
+            result.addAll(i.getFeature().getAllScoreModifiers());
         }
 
         return result;
@@ -142,8 +142,8 @@ public class Character {
                 result.addAll(classes.get(i).getAllProficienciesApplied(profBonus, false));
             }
         }
-        for (InventoryItem ii : equippedItems) {
-            result.addAll(ii.getFeature().getAllProficiencyModifiers(profBonus));
+        for (InventoryItem i : equippedItems) {
+            result.addAll(i.getFeature().getAllProficiencyModifiers(profBonus));
         }
 
         return result;
@@ -159,11 +159,11 @@ public class Character {
         if (background != null) {
             features.addAll(background.getFeatures());
         }
-        for (CharClass cc : classes) {
-            features.addAll(cc.getAllFeaturesLevelled());
+        for (CharClass c : classes) {
+            features.addAll(c.getAllFeaturesLevelled());
         }
-        for (InventoryItem ii : equippedItems) {
-            features.add(ii.getFeature());
+        for (InventoryItem i : equippedItems) {
+            features.add(i.getFeature());
         }
         List<Feature> statFeatures = Feature.getAllReachableFeaturesOfType(features, FeatureType.STAT);
         for (Feature f : statFeatures) {
@@ -213,8 +213,8 @@ public class Character {
 
     public int getCharacterLevel() {
         int result = 0;
-        for (CharClass cc : classes) {
-            result += cc.getLevel();
+        for (CharClass c : classes) {
+            result += c.getLevel();
         }
         return result;
     }
@@ -227,8 +227,8 @@ public class Character {
 
     public int getClassesHitPoints() {
         int result = 0;
-        for (CharClass cc : classes) {
-            for (int i : cc.getRolledHitPoints()) {
+        for (CharClass c : classes) {
+            for (int i : c.getRolledHitPoints()) {
                 result += i;
             }
         }
@@ -273,9 +273,9 @@ public class Character {
     //MODIFIES: this
     //EFFECTS: removes first item from equipped items that matches name
     public void removeEquippedItem(String itemName) {
-        for (InventoryItem ii : equippedItems) {
-            if (ii.getName().equals(itemName)) {
-                equippedItems.remove(ii);
+        for (InventoryItem i : equippedItems) {
+            if (i.getName().equals(itemName)) {
+                equippedItems.remove(i);
                 updateScores();
                 break;
             }
@@ -286,9 +286,9 @@ public class Character {
     //MODIFIES: this
     //EFFECTS: removes first item from carried items that matches name
     public void removeCarriedItem(String itemName) {
-        for (InventoryItem ii : carriedItems) {
-            if (ii.getName().equals(itemName)) {
-                carriedItems.remove(ii);
+        for (InventoryItem i : carriedItems) {
+            if (i.getName().equals(itemName)) {
+                carriedItems.remove(i);
                 break;
             }
         }
@@ -297,9 +297,9 @@ public class Character {
     //MODIFIES: this
     //EFFECTS: removes first item from inventory that matches name
     public void removeInventoryItem(String itemName) {
-        for (InventoryItem ii : inventoryItems) {
-            if (ii.getName().equals(itemName)) {
-                inventoryItems.remove(ii);
+        for (InventoryItem i : inventoryItems) {
+            if (i.getName().equals(itemName)) {
+                inventoryItems.remove(i);
                 break;
             }
         }

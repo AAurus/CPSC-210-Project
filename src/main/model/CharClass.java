@@ -205,9 +205,9 @@ public class CharClass extends HasFeatures {
     //MODIFIES: this
     //EFFECTS: removes the first item that matches
     public void removeEquipment(String itemName) {
-        for (InventoryItem ii : equipment) {
-            if (ii.getName().equals(itemName)) {
-                equipment.remove(ii);
+        for (InventoryItem i : equipment) {
+            if (i.getName().equals(itemName)) {
+                equipment.remove(i);
                 break;
             }
         }
@@ -251,12 +251,12 @@ public class CharClass extends HasFeatures {
         if (subClassSelect >= 0) {
             chosenClass = subClasses.get(subClassSelect);
         }
-        for (CharClass cc : subClasses) {
-            if (cc.getName().equals(subClassName)) {
-                if (subClasses.indexOf(cc) == subClassSelect) {
+        for (CharClass c : subClasses) {
+            if (c.getName().equals(subClassName)) {
+                if (subClasses.indexOf(c) == subClassSelect) {
                     resetSubClassSelect();
                 }
-                subClasses.remove(cc);
+                subClasses.remove(c);
                 break;
             }
         }

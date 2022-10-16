@@ -50,10 +50,10 @@ public class InventoryItem {
     //MODIFIES: from, to
     //EFFECTS: moves item from one inventory to another
     public static void moveItem(ArrayList<InventoryItem> from, ArrayList<InventoryItem> to, String itemName) {
-        for (InventoryItem ii : from) {
-            if (ii.getName().equals(itemName)) {
-                to.add(ii);
-                from.remove(ii);
+        for (InventoryItem i : from) {
+            if (i.getName().equals(itemName)) {
+                to.add(i);
+                from.remove(i);
             }
         }
     }
@@ -61,8 +61,8 @@ public class InventoryItem {
     //EFFECTS: returns total weight of all items in list
     public static BigDecimal getTotalWeight(List<InventoryItem> items) {
         BigDecimal result = BigDecimal.ZERO;
-        for (InventoryItem ii : items) {
-            result.add(ii.getWeight());
+        for (InventoryItem i : items) {
+            result.add(i.getWeight());
         }
         return result;
     }

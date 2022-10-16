@@ -33,8 +33,8 @@ public enum StatType {
     //EFFECTS: creates integer HashMap from Modifier HashMap for use in Character
     public static HashMap<StatType, Integer> finalizeStats(HashMap<StatType, Modifier> modifierStats) {
         HashMap<StatType, Integer> result = new HashMap<>();
-        for (StatType st : modifierStats.keySet()) {
-            result.put(st, modifierStats.get(st).getValue().setScale(0, RoundingMode.FLOOR).intValue());
+        for (StatType s : modifierStats.keySet()) {
+            result.put(s, modifierStats.get(s).getValue().setScale(0, RoundingMode.FLOOR).intValue());
         }
         return result;
     }
@@ -62,8 +62,8 @@ public enum StatType {
     //EFFECTS: returns a Modifier version of an integer stat map
     public static HashMap<StatType, Modifier> convertToModStats(HashMap<StatType, Integer> baseMap) {
         HashMap<StatType, Modifier> result = new HashMap<>();
-        for (StatType st : baseMap.keySet()) {
-            result.put(st, new Modifier(baseMap.get(st)));
+        for (StatType s : baseMap.keySet()) {
+            result.put(s, new Modifier(baseMap.get(s)));
         }
         return result;
     }
@@ -100,8 +100,8 @@ public enum StatType {
     public static HashMap<StatType, Modifier> applyAllStatsToAll(HashMap<StatType, Modifier> base,
                                                                    List<HashMap<StatType, Modifier>> apply) {
         HashMap<StatType, Modifier> result = new HashMap<>();
-        for (StatType st : StatType.values()) {
-            result.put(st, base.get(st));
+        for (StatType s : StatType.values()) {
+            result.put(s, base.get(s));
         }
         for (int i = 0; i < Modifier.OPERATIONS_ORDER.length; i++) {
             for (HashMap<StatType, Modifier> stat : apply) {
@@ -118,8 +118,8 @@ public enum StatType {
                                                                     List<HashMap<StatType, Modifier>> apply,
                                                                     List<StatType> statTypes) {
         HashMap<StatType, Modifier> result = new HashMap<>();
-        for (StatType st : statTypes) {
-            result.put(st, base.get(st));
+        for (StatType s : statTypes) {
+            result.put(s, base.get(s));
         }
         for (int i = 0; i < Modifier.OPERATIONS_ORDER.length; i++) {
             for (HashMap<StatType, Modifier> stat : apply) {
@@ -135,12 +135,12 @@ public enum StatType {
     public static HashMap<StatType, Modifier> applyStatsToAll(HashMap<StatType, Modifier> base,
                                                                 HashMap<StatType, Modifier> apply) {
         HashMap<StatType, Modifier> result = new HashMap<>();
-        for (StatType st : StatType.values()) {
-            if (base.containsKey(st)) {
-                if (apply.containsKey(st)) {
-                    result.put(st, base.get(st).apply(apply.get(st)));
+        for (StatType s : StatType.values()) {
+            if (base.containsKey(s)) {
+                if (apply.containsKey(s)) {
+                    result.put(s, base.get(s).apply(apply.get(s)));
                 } else {
-                    result.put(st, base.get(st));
+                    result.put(s, base.get(s));
                 }
             }
         }
@@ -155,12 +155,12 @@ public enum StatType {
                                                            HashMap<StatType, Modifier> apply,
                                                            ModifierType applyType) {
         HashMap<StatType, Modifier> result = new HashMap<>();
-        for (StatType st : StatType.values()) {
-            if (base.containsKey(st)) {
-                if (apply.containsKey(st) && apply.get(st).getType().equals(applyType)) {
-                    result.put(st, base.get(st).apply(apply.get(st)));
+        for (StatType s : StatType.values()) {
+            if (base.containsKey(s)) {
+                if (apply.containsKey(s) && apply.get(s).getType().equals(applyType)) {
+                    result.put(s, base.get(s).apply(apply.get(s)));
                 } else {
-                    result.put(st, base.get(st));
+                    result.put(s, base.get(s));
                 }
             }
         }

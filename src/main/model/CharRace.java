@@ -73,9 +73,9 @@ public class CharRace extends HasFeatures {
     //MODIFIES: this
     //EFFECTS: returns true if subrace was selected successfully, false otherwise
     public boolean selectSubRace(String choiceName) {
-        for (CharRace cr : subRaces) {
-            if (cr.getName().equals(choiceName)) {
-                subRaceSelect = subRaces.indexOf(cr);
+        for (CharRace r : subRaces) {
+            if (r.getName().equals(choiceName)) {
+                subRaceSelect = subRaces.indexOf(r);
                 return true;
             }
         }
@@ -114,12 +114,12 @@ public class CharRace extends HasFeatures {
         if (subRaceSelect >= 0) {
             chosenRace = subRaces.get(subRaceSelect);
         }
-        for (CharRace cr : subRaces) {
-            if (cr.getName().equals(subRaceName)) {
-                if (subRaces.indexOf(cr) == subRaceSelect) {
+        for (CharRace r : subRaces) {
+            if (r.getName().equals(subRaceName)) {
+                if (subRaces.indexOf(r) == subRaceSelect) {
                     resetSubRaceSelect();
                 }
-                subRaces.remove(cr);
+                subRaces.remove(r);
                 break;
             }
         }
