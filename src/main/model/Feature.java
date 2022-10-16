@@ -308,7 +308,8 @@ public class Feature {
             } else if (f.getType().equals(FeatureType.MULTI)) {
                 if (f.isChoice()) {
                     for (int choice : f.getChoices()) {
-                        result.addAll(getAllReachableFeaturesOfType(ListOfHelper.listOf(f.getFeatures().get(choice)), type));
+                        result.addAll(getAllReachableFeaturesOfType(ListOfHelper.listOf(f.getFeatures().get(choice)),
+                                type));
                     }
                 } else {
                     result.addAll(getAllReachableFeaturesOfType(f.getFeatures(), type));
