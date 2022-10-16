@@ -68,6 +68,20 @@ public class CharRaceTest {
     }
 
     @Test
+    void setManyScores() {
+        testEmptyRace.setScoreMod(ScoreType.CON_SAVE, new Modifier(2));
+        testEmptyRace.setScoreMod(ScoreType.DEX_SAVE, new Modifier(1));
+        Assertions.assertEquals(new Modifier(2), testEmptyRace.getScores().get(ScoreType.CON_SAVE));
+        Assertions.assertEquals(new Modifier(1), testEmptyRace.getScores().get(ScoreType.DEX_SAVE));
+    }
+
+    @Test
+    void resetScores() {
+        testFullRace.resetScoreMod(ScoreType.STRENGTH);
+        Assertions.assertNull(testEmptyRace.getScores().get(ScoreType.STRENGTH));
+    }
+
+    @Test
     void testAddOneProficiency() {
         testEmptyRace.addProficiency(testProficiency1);
         Assertions.assertTrue(testEmptyRace.getProficiencies().contains(testProficiency1));
