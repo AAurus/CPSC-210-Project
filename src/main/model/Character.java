@@ -31,6 +31,23 @@ public class Character {
     }
 
     //MODIFIES: this
+    //EFFECTS: initializes all stats and scores on character from race, background, classes, equipment
+    public void reinitializeCharacter() {
+        updateScores();
+        updateStats();
+    }
+
+    //MODIFIES: this
+    //EFFECTS: initializes all values on character from race, background, classes, equipment, WIPING INVENTORY
+    public void initializeCharacter() {
+        reinitializeCharacter();
+        equippedItems = new ArrayList<>();
+        carriedItems = new ArrayList<>();
+        inventoryItems = new ArrayList<>();
+        initStarterEquipment();
+    }
+
+    //MODIFIES: this
     //EFFECTS: loads base scores into this
     private void loadBaseScores(int strength, int dexterity, int constitution,
                                 int intelligence, int wisdom, int charisma) {
@@ -75,11 +92,12 @@ public class Character {
         }
         HashMap<StatType, Modifier> charDeriveMap = new HashMap<>();
         charDeriveMap.put(StatType.MAX_HIT_POINTS, new Modifier(ModifierType.BASE, conPerLevel.getValue().multiply(
-                new BigDecimal(skillThrowBonuses.get(ScoreType.CON_CHECK) * getCharacterLevel()))));
+                new BigDecimal(skillThrowBonuses.get(ScoreType.CON_CHECK) * getCharacterLevel()
+                        + getClassesHitPoints()))));
         charDeriveMap.put(StatType.INITIATIVE_BONUS, new Modifier(skillThrowBonuses.get(ScoreType.DEX_CHECK)));
         charDeriveMap.put(StatType.DEXTERITY_ARMOR_BONUS, new Modifier(skillThrowBonuses.get(ScoreType.DEX_CHECK)));
         charDeriveMap.put(StatType.CARRY_CAPACITY, new Modifier(abilityScores.get(ScoreType.STRENGTH) * 15));
-        charDeriveMap.put(StatType.PROFICIENCY_BONUS, new Modifier(calcProficiencyBonus()));
+        charDeriveMap.put(StatType.PROFICIENCY_BONUS, new Modifier(calculateProficiencyBonus()));
         charDeriveMap.put(StatType.WALK_SPEED, walkSpeed);
         HashMap<StatType, Modifier> finalApplyMap = StatType.deriveStats(charDeriveMap);
         stats = StatType.finalizeStats(StatType.applyAllStatsToList(finalApplyMap, allStatMods,
@@ -109,7 +127,7 @@ public class Character {
 
     //EFFECTS: returns list of all proficiency-based score changes applied to this
     private ArrayList<HashMap<ScoreType, Modifier>> getAllScoreProficiencyMods() {
-        BigDecimal profBonus = new BigDecimal(calcProficiencyBonus());
+        BigDecimal profBonus = new BigDecimal(calculateProficiencyBonus());
 
         ArrayList<HashMap<ScoreType, Modifier>> result = new ArrayList<>();
         if (race != null) {
@@ -201,10 +219,20 @@ public class Character {
         return result;
     }
 
-    public int calcProficiencyBonus() {
+    public int calculateProficiencyBonus() {
         BigDecimal undividedValue = new BigDecimal(getCharacterLevel()).add(new BigDecimal(1));
         BigDecimal unroundedValue = undividedValue.divide(new BigDecimal(4));
         return unroundedValue.setScale(0, RoundingMode.FLOOR).intValue();
+    }
+
+    public int getClassesHitPoints() {
+        int result = 0;
+        for (CharClass cc : classes) {
+            for (int i : cc.getRolledHitPoints()) {
+                result += i;
+            }
+        }
+        return result;
     }
 
     public ArrayList<InventoryItem> getEquippedItems() {
@@ -221,14 +249,17 @@ public class Character {
 
     public void setRace(CharRace race) {
         this.race = race;
+        reinitializeCharacter();
     }
 
     public void setBackground(CharBackground background) {
         this.background = background;
+        reinitializeCharacter();
     }
 
     public void addEquippedItem(InventoryItem item) {
         equippedItems.add(item);
+        reinitializeCharacter();
     }
 
     public void addCarriedItem(InventoryItem item) {
@@ -249,6 +280,7 @@ public class Character {
                 break;
             }
         }
+        reinitializeCharacter();
     }
 
     //MODIFIES: this
@@ -270,6 +302,31 @@ public class Character {
                 inventoryItems.remove(ii);
                 break;
             }
+        }
+    }
+
+    public void addClass(CharClass charClass) {
+        classes.add(charClass);
+        reinitializeCharacter();
+    }
+
+    //REQUIRES: index must be in range for classes
+    //MODIFIES: this
+    //EFFECTS: levels up on a certain class
+    public void levelUp(int index) {
+        if (index >= 0 && index < classes.size()) {
+            classes.get(index).levelUp();
+            reinitializeCharacter();
+        }
+    }
+
+    //REQUIRES: index must be in range for classes
+    //MODIFIES: this
+    //EFFECTS: rolls bonus hit points for a certain class, if possible
+    public void rollClassHitPoints(int index) {
+        if (index >= 0 && index < classes.size()) {
+            classes.get(index).rollHitPoints();
+            reinitializeCharacter();
         }
     }
 }

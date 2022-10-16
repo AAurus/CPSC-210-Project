@@ -4,6 +4,7 @@ import model.Modifier;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -47,6 +48,15 @@ public enum ScoreType {
     CHR_PERFORMANCE,
     CHR_PERSUASION,
     ETC;
+
+    //EFFECTS: replicates ScoreType.listOf()(E... elements) for ScoreType
+    public static List<ScoreType> listOf(ScoreType... scoreTypes) {
+        ArrayList<ScoreType> result = new ArrayList<>();
+        for (ScoreType st : scoreTypes) {
+            result.add(st);
+        }
+        return result;
+    }
 
     //REQUIRES: STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA are all keyed to values in baseScores
     //EFFECTS: initializes a check modifier HashMap using another HashMap containing base ability scores
@@ -101,11 +111,11 @@ public enum ScoreType {
         }
     }
 
-    public static final List<ScoreType> BASE_SCORES = List.of(STRENGTH,     DEXTERITY,
+    public static final List<ScoreType> BASE_SCORES = ScoreType.listOf(STRENGTH,     DEXTERITY,
                                                               CONSTITUTION, INTELLIGENCE,
                                                               WISDOM,       CHARISMA);
 
-    public static final List<ScoreType> CHECK_SCORES = List.of(ScoreType.values()).subList(6,
+    public static final List<ScoreType> CHECK_SCORES = ScoreType.listOf(ScoreType.values()).subList(6,
                                                                ScoreType.values().length - 1);
 
     public static HashMap<ScoreType, Modifier> generateEmptyScoreMap() {

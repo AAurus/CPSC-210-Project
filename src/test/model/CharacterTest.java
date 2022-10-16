@@ -10,6 +10,11 @@ class CharacterTest {
     void testConstructor() {
         Character testCharacter = new Character(10,11,12,13,14,15);
         Assertions.assertNull(testCharacter.getClasses());
-
+        Assertions.assertNull(testCharacter.getRace());
+        Assertions.assertNull(testCharacter.getBackground());
+        Assertions.assertTrue(testCharacter.getEquippedItems().isEmpty());
+        Assertions.assertTrue(testCharacter.getCarriedItems().isEmpty());
+        Assertions.assertTrue(testCharacter.getInventoryItems().isEmpty());
+        
     }
 }
