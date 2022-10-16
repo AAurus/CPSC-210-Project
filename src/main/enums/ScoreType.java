@@ -1,6 +1,7 @@
 package enums;
 
 import model.Modifier;
+import utility.ListOfHelper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -49,7 +50,7 @@ public enum ScoreType {
     CHR_PERSUASION,
     ETC;
 
-    //EFFECTS: replicates ScoreType.listOf()(E... elements) for ScoreType
+    //EFFECTS: replicates ListOfHelper.listOf(E... elements) for ScoreType
     public static List<ScoreType> listOf(ScoreType... scoreTypes) {
         ArrayList<ScoreType> result = new ArrayList<>();
         for (ScoreType st : scoreTypes) {
@@ -111,11 +112,11 @@ public enum ScoreType {
         }
     }
 
-    public static final List<ScoreType> BASE_SCORES = ScoreType.listOf(STRENGTH,     DEXTERITY,
-                                                              CONSTITUTION, INTELLIGENCE,
-                                                              WISDOM,       CHARISMA);
+    public static final List<ScoreType> BASE_SCORES = ListOfHelper.listOf(STRENGTH,     DEXTERITY,
+                                                                          CONSTITUTION, INTELLIGENCE,
+                                                                          WISDOM,       CHARISMA);
 
-    public static final List<ScoreType> CHECK_SCORES = ScoreType.listOf(ScoreType.values()).subList(6,
+    public static final List<ScoreType> CHECK_SCORES = ListOfHelper.listOf(ScoreType.values()).subList(6,
                                                                ScoreType.values().length - 1);
 
     public static HashMap<ScoreType, Modifier> generateEmptyScoreMap() {

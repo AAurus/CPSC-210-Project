@@ -5,6 +5,7 @@ import enums.ScoreType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import utility.ListOfHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -28,11 +29,11 @@ public class CharRaceTest {
     private CharRace testSubRace1 = new CharRace("Test SubRace 1");
     private CharRace testSubRace2 = new CharRace("Test SubRace 2");
 
-    private ArrayList<Proficiency> proficiencyList = new ArrayList<>(List.of(testProficiency1,
+    private ArrayList<Proficiency> proficiencyList = new ArrayList<>(ListOfHelper.listOf(testProficiency1,
                                                                              testProficiency2,
                                                                              testProficiency3));
-    private ArrayList<String> languageList = new ArrayList<>(List.of("Common", "TestLang"));
-    private ArrayList<Feature> featureList = new ArrayList<>(List.of(testFeature1, testFeature2));
+    private ArrayList<String> languageList = new ArrayList<>(ListOfHelper.listOf("Common", "TestLang"));
+    private ArrayList<Feature> featureList = new ArrayList<>(ListOfHelper.listOf(testFeature1, testFeature2));
     @BeforeEach
     void runBefore() {
         testScoreMap.put(ScoreType.INTELLIGENCE, new Modifier(2));
@@ -40,7 +41,7 @@ public class CharRaceTest {
 
         testEmptyRace = new CharRace("Test Empty Race");
         testFullRace = new CharRace("Test Full Race", testScoreMap, proficiencyList, languageList, featureList,
-                new ArrayList<>(List.of(testSubRace1, testSubRace2)), "Test 2");
+                new ArrayList<>(ListOfHelper.listOf(testSubRace1, testSubRace2)), "Test 2");
     }
 
     @Test

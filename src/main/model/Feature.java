@@ -3,6 +3,7 @@ package model;
 import enums.FeatureType;
 import enums.ScoreType;
 import enums.StatType;
+import utility.ListOfHelper;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -245,7 +246,7 @@ public class Feature {
 
     //EFFECTS: compiles all reachable score features into one big list of hashmaps
     public List<HashMap<ScoreType, Modifier>> getAllScoreModifiers() {
-        List<Feature> scoreFeatures = getAllReachableFeaturesOfType(List.of(this), FeatureType.SCORE);
+        List<Feature> scoreFeatures = getAllReachableFeaturesOfType(ListOfHelper.listOf(this), FeatureType.SCORE);
         List<HashMap<ScoreType, Modifier>> result = new ArrayList<>();
         for (Feature f : scoreFeatures) {
             result.add(f.getScoreMod());
@@ -255,7 +256,7 @@ public class Feature {
 
     //EFFECTS: compiles all reachable proficiency features into one big list of hashmaps
     public List<HashMap<ScoreType, Modifier>> getAllProficiencyModifiers(BigDecimal profBonus) {
-        List<Feature> profFeatures = getAllReachableFeaturesOfType(List.of(this), FeatureType.PROFICIENCY);
+        List<Feature> profFeatures = getAllReachableFeaturesOfType(ListOfHelper.listOf(this), FeatureType.PROFICIENCY);
         List<HashMap<ScoreType, Modifier>> result = new ArrayList<>();
         for (Feature f : profFeatures) {
             result.add(f.getProficiency().generateScoreMap(profBonus));
@@ -265,7 +266,7 @@ public class Feature {
 
     //EFFECTS: compiles all reachable stat features into one big list of hashmaps
     public List<HashMap<StatType, Modifier>> getAllStatModifiers() {
-        List<Feature> scoreFeatures = getAllReachableFeaturesOfType(List.of(this), FeatureType.STAT);
+        List<Feature> scoreFeatures = getAllReachableFeaturesOfType(ListOfHelper.listOf(this), FeatureType.STAT);
         List<HashMap<StatType, Modifier>> result = new ArrayList<>();
         for (Feature f : scoreFeatures) {
             result.add(f.getStatMod());
@@ -307,7 +308,7 @@ public class Feature {
             } else if (f.getType().equals(FeatureType.MULTI)) {
                 if (f.isChoice()) {
                     for (int choice : f.getChoices()) {
-                        result.addAll(getAllReachableFeaturesOfType(List.of(f.getFeatures().get(choice)), type));
+                        result.addAll(getAllReachableFeaturesOfType(ListOfHelper.listOf(f.getFeatures().get(choice)), type));
                     }
                 } else {
                     result.addAll(getAllReachableFeaturesOfType(f.getFeatures(), type));

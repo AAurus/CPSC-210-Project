@@ -7,6 +7,7 @@ import enums.StatType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import utility.ListOfHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -50,13 +51,13 @@ public class FeatureTest {
         testDescFeature = new Feature("Test Description Feature", "Test Description");
 
         testMultiLevelFeature = new Feature("Test Multi Level Branch Feature",
-                new ArrayList<>(List.of(testDescFeature, testMultiFeature, testChoiceFeature)));
+                new ArrayList<>(ListOfHelper.listOf(testDescFeature, testMultiFeature, testChoiceFeature)));
 
         testBranchChoiceFeature = new Feature("Test Choice Feature With Branches",
-                new ArrayList<>(List.of(testChoiceFeature, testMultiChoiceFeature)), true);
+                new ArrayList<>(ListOfHelper.listOf(testChoiceFeature, testMultiChoiceFeature)), true);
 
         testOmniFeature = new Feature("Test Feature With Everything",
-                new ArrayList<>(List.of(testScoreFeature, testStatFeature, testProficiencyFeature, testAttackFeature,
+                new ArrayList<>(ListOfHelper.listOf(testScoreFeature, testStatFeature, testProficiencyFeature, testAttackFeature,
                         testMultiFeature, testDescFeature)));
     }
 
@@ -219,7 +220,7 @@ public class FeatureTest {
 
     @Test
     void testGetAllFeaturesOfType() {
-        List<Feature> result = Feature.getAllFeaturesOfType(List.of(testMultiLevelFeature),
+        List<Feature> result = Feature.getAllFeaturesOfType(ListOfHelper.listOf(testMultiLevelFeature),
                 FeatureType.ETC);
         Assertions.assertEquals(5, result.size());
         Assertions.assertTrue(result.contains(testDescFeature));
@@ -229,7 +230,7 @@ public class FeatureTest {
 
     @Test
     void testGetAllReachableFeaturesOfType() {
-        List<Feature> result = Feature.getAllReachableFeaturesOfType(List.of(testMultiLevelFeature),
+        List<Feature> result = Feature.getAllReachableFeaturesOfType(ListOfHelper.listOf(testMultiLevelFeature),
                 FeatureType.ETC);
         Assertions.assertEquals(3, result.size());
         Assertions.assertTrue(result.contains(testDescFeature));
@@ -261,14 +262,14 @@ public class FeatureTest {
 
     @Test
     void testGetAllSurfaceFeaturesWithChoice() {
-        List<Feature> result = Feature.getAllSurfaceFeaturesWithChoice(List.of(testBranchChoiceFeature));
+        List<Feature> result = Feature.getAllSurfaceFeaturesWithChoice(ListOfHelper.listOf(testBranchChoiceFeature));
         Assertions.assertEquals(1, result.size());
         Assertions.assertTrue(result.contains(testBranchChoiceFeature));
     }
 
     @Test
     void testGetAllFeaturesWithChoice() {
-        List<Feature> result = Feature.getAllFeaturesWithChoice(List.of(testBranchChoiceFeature));
+        List<Feature> result = Feature.getAllFeaturesWithChoice(ListOfHelper.listOf(testBranchChoiceFeature));
         Assertions.assertEquals(3, result.size());
         Assertions.assertTrue(result.contains(testBranchChoiceFeature));
         Assertions.assertTrue(result.contains(testChoiceFeature));
@@ -278,7 +279,7 @@ public class FeatureTest {
     @Test
     void testGetAllReachableFeaturesWithChoice() {
         testBranchChoiceFeature.chooseFeature(0);
-        List<Feature> result = Feature.getAllReachableFeaturesWithChoice(List.of(testBranchChoiceFeature));
+        List<Feature> result = Feature.getAllReachableFeaturesWithChoice(ListOfHelper.listOf(testBranchChoiceFeature));
         Assertions.assertEquals(2, result.size());
         Assertions.assertTrue(result.contains(testBranchChoiceFeature));
         Assertions.assertTrue(result.contains(testChoiceFeature));
@@ -287,10 +288,10 @@ public class FeatureTest {
     @Test
     void testGetAllScoreModifiers() {
         Feature testChoiceFeatureWithScore = new Feature("Test Choice Score Feature",
-                List.of(testScoreFeature, testOmniFeature), true);
+                ListOfHelper.listOf(testScoreFeature, testOmniFeature), true);
         testChoiceFeatureWithScore.chooseFeature(0);
         Feature multiLevelScoreFeature = new Feature("Test Multi-Level Score Feature",
-                List.of(testScoreFeature, testChoiceFeatureWithScore, testOmniFeature));
+                ListOfHelper.listOf(testScoreFeature, testChoiceFeatureWithScore, testOmniFeature));
         List<HashMap<ScoreType, Modifier>> result = multiLevelScoreFeature.getAllScoreModifiers();
         Assertions.assertEquals(3, result.size());
         Assertions.assertTrue(result.contains(testScoreMap));
@@ -299,10 +300,10 @@ public class FeatureTest {
     @Test
     void testGetAllStatModifiers() {
         Feature testChoiceFeatureWithStat = new Feature("Test Choice Stat Feature",
-                List.of(testStatFeature, testOmniFeature), true);
+                ListOfHelper.listOf(testStatFeature, testOmniFeature), true);
         testChoiceFeatureWithStat.chooseFeature(0);
         Feature multiLevelStatFeature = new Feature("Test Multi-Level Stat Feature",
-                List.of(testStatFeature, testChoiceFeatureWithStat, testOmniFeature));
+                ListOfHelper.listOf(testStatFeature, testChoiceFeatureWithStat, testOmniFeature));
         List<HashMap<StatType, Modifier>> result = multiLevelStatFeature.getAllStatModifiers();
         Assertions.assertEquals(3, result.size());
         Assertions.assertTrue(result.contains(testStatMap));
@@ -311,10 +312,10 @@ public class FeatureTest {
     @Test
     void testGetAllProficiencyModifiers() {
         Feature testChoiceFeatureWithProf = new Feature("Test Choice Proficiency Feature",
-                List.of(testProficiencyFeature, testOmniFeature), true);
+                ListOfHelper.listOf(testProficiencyFeature, testOmniFeature), true);
         testChoiceFeatureWithProf.chooseFeature(0);
         Feature multiLevelStatFeature = new Feature("Test Multi-Level Proficiency Feature",
-                List.of(testProficiencyFeature, testChoiceFeatureWithProf, testOmniFeature));
+                ListOfHelper.listOf(testProficiencyFeature, testChoiceFeatureWithProf, testOmniFeature));
         List<HashMap<ScoreType, Modifier>> result = multiLevelStatFeature.getAllProficiencyModifiers(BigDecimal.ONE);
         Assertions.assertEquals(3, result.size());
         Assertions.assertTrue(result.contains(testProficiency.generateScoreMap(BigDecimal.ONE)));

@@ -3,6 +3,7 @@ package model;
 import enums.FeatureType;
 import enums.ProficiencyType;
 import enums.ScoreType;
+import utility.ListOfHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -148,7 +149,7 @@ public class CharClass extends HasFeatures {
                     levelFeature.isChoice(), levelFeature.getDescription()));
         } else {
             initFeatures(levelSlot);
-            features.set(levelSlot, new Feature("Level " + level + " Features", List.of(feature)));
+            features.set(levelSlot, new Feature("Level " + level + " Features", ListOfHelper.listOf(feature)));
         }
     }
 

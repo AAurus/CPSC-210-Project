@@ -1,6 +1,7 @@
 package enums;
 
 import model.Modifier;
+import utility.ListOfHelper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -168,8 +169,9 @@ public enum StatType {
 
     //EFFECTS: returns all stat types that are not used in deriveStats
     public static List<StatType> getNonDerivingStats() {
-        ArrayList<StatType> result = new ArrayList<>(List.of(StatType.values()));
-        result.removeAll(List.of(MAX_HIT_POINTS, INITIATIVE_BONUS, WALK_SPEED, DEXTERITY_ARMOR_BONUS, CARRY_CAPACITY));
+        ArrayList<StatType> result = new ArrayList<>(ListOfHelper.listOf(StatType.values()));
+        result.removeAll(ListOfHelper.listOf(MAX_HIT_POINTS, INITIATIVE_BONUS, WALK_SPEED,
+                DEXTERITY_ARMOR_BONUS, CARRY_CAPACITY));
         return result;
     }
 }

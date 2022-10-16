@@ -4,6 +4,7 @@ import enums.ScoreType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import utility.ListOfHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -24,12 +25,12 @@ public class CharBackgroundTest {
     private Proficiency proficiencyTest2 = new Proficiency(ScoreType.DEX_SAVE, new BigDecimal("4.5"));
     private Proficiency proficiencyTest3 = new Proficiency("Short Swords", new BigDecimal("2"));
 
-    private ArrayList<Proficiency> proficiencyList = new ArrayList<>(List.of(proficiencyTest1,
+    private ArrayList<Proficiency> proficiencyList = new ArrayList<>(ListOfHelper.listOf(proficiencyTest1,
                                                                              proficiencyTest2,
                                                                              proficiencyTest3));
-    private ArrayList<String> languageList = new ArrayList<>(List.of("Common", "TestLang"));
-    private ArrayList<Feature> featureList = new ArrayList<>(List.of(featureTest1, featureTest2));
-    private ArrayList<InventoryItem> itemList = new ArrayList<>(List.of(itemTest1, itemTest2));
+    private ArrayList<String> languageList = new ArrayList<>(ListOfHelper.listOf("Common", "TestLang"));
+    private ArrayList<Feature> featureList = new ArrayList<>(ListOfHelper.listOf(featureTest1, featureTest2));
+    private ArrayList<InventoryItem> itemList = new ArrayList<>(ListOfHelper.listOf(itemTest1, itemTest2));
 
     @BeforeEach
     void runBefore() {

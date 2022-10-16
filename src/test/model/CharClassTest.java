@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.junit.jupiter.api.Assertions;
+import utility.ListOfHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -29,11 +30,11 @@ public class CharClassTest {
     private Proficiency testProficiency2 = new Proficiency(ScoreType.DEX_SAVE, new BigDecimal("4.5"));
     private Proficiency testProficiency3 = new Proficiency("Short Swords", new BigDecimal("2"));
 
-    private ArrayList<Proficiency> proficiencyList = new ArrayList<>(List.of(testProficiency1,
+    private ArrayList<Proficiency> proficiencyList = new ArrayList<>(ListOfHelper.listOf(testProficiency1,
             testProficiency2,
             testProficiency3));
-    private ArrayList<Feature> featureList = new ArrayList<>(List.of(testFeature1, testFeature2));
-    private ArrayList<InventoryItem> itemList = new ArrayList<>(List.of(testItem1, testItem2));
+    private ArrayList<Feature> featureList = new ArrayList<>(ListOfHelper.listOf(testFeature1, testFeature2));
+    private ArrayList<InventoryItem> itemList = new ArrayList<>(ListOfHelper.listOf(testItem1, testItem2));
 
     @BeforeEach
     void runBefore() {
@@ -43,7 +44,7 @@ public class CharClassTest {
                                                       new ArrayList<>(), new ArrayList<>(),
                                                       new ArrayList<>(), 3, 6);
         testFullClass = new CharClass("Test Full Class", proficiencyList, proficiencyList,
-                featureList, itemList, new ArrayList<>(List.of(testSubClass1, testSubClass2)), 3, 6);
+                featureList, itemList, new ArrayList<>(ListOfHelper.listOf(testSubClass1, testSubClass2)), 3, 6);
     }
 
     @Test
