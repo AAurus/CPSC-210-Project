@@ -21,12 +21,13 @@ public class CharacterEditor extends AcceptsInput {
                                + "[3] Change Background\n"
                                + "[4] Add Class\n"
                                + "[5] Remove Class\n"
-                               + "[6] Add Item\n"
-                               + "[7] Remove Item\n"
-                               + "[8] Move Item\n"
-                               + "[9] Finish");
+                               + "[6] Level Up Class\n"
+                               + "[7] Add Item\n"
+                               + "[8] Remove Item\n"
+                               + "[9] Move Item\n"
+                               + "[10] Finish");
             int menuSelect = input.scanPositiveIntWithExit("Please select an option using its index.");
-            if (menuSelect < 0 || menuSelect == 9) {
+            if (menuSelect < 0 || menuSelect == 10) {
                 break;
             }
             baseCharacter = menuEdit(menuSelect, baseCharacter, classes, races, backgrounds, items);
@@ -56,12 +57,15 @@ public class CharacterEditor extends AcceptsInput {
                 removeClass(baseCharacter);
                 break;
             case 6:
-                addItem(baseCharacter, items);
+                levelUp(baseCharacter);
                 break;
             case 7:
-                removeItem(baseCharacter);
+                addItem(baseCharacter, items);
                 break;
             case 8:
+                removeItem(baseCharacter);
+                break;
+            case 9:
                 moveItem(baseCharacter);
         }
         return baseCharacter;
@@ -159,6 +163,24 @@ public class CharacterEditor extends AcceptsInput {
             }
             if (classIndex > 0 && classIndex <= classes.size()) {
                 baseCharacter.removeClass(classIndex - 1);
+                return;
+            }
+        }
+    }
+
+    private void levelUp(Character baseCharacter) {
+        ArrayList<CharClass> classes = baseCharacter.getClasses();
+        System.out.println("Classes Available:");
+        for (int i = 0; i < classes.size(); i++) {
+            System.out.println("[" + Integer.toString(i + 1) + "] " + classes.get(i).getName());
+        }
+        while (true) {
+            int classIndex = input.scanPositiveIntWithExit("Please choose a class by its index:");
+            if (classIndex < 0) {
+                return;
+            }
+            if (classIndex > 0 && classIndex <= classes.size()) {
+                baseCharacter.levelUp(classIndex - 1);
                 return;
             }
         }

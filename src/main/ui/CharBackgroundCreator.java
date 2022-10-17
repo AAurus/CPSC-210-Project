@@ -36,7 +36,7 @@ public class CharBackgroundCreator extends AcceptsInput {
         if (baseBackground == null) {
             return null;
         }
-        if (input.scanYesNo("Would you like to add proficiencies to this bacgkround?")) {
+        if (input.scanYesNo("Would you like to add proficiencies to this background?")) {
             while (true) {
                 Proficiency proficiency = input.scanProficiency();
                 if (proficiency == null) {

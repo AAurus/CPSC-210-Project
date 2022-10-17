@@ -146,20 +146,20 @@ public class CharClassCreator extends AcceptsInput {
         }
         System.out.println("The features you can choose to add to this feature are:");
         for (int i = 0; i < otherFeatures.size(); i++) {
-            System.out.println("[" + i + "] " + otherFeatures.get(i).getName());
+            System.out.println("[" + (i + 1) + "] " + otherFeatures.get(i).getName());
         }
         while (true) {
             int index = input.scanPositiveIntWithExit("Please enter the index of your selected feature");
             if (index < 0) {
                 return null;
-            } else if (index < otherFeatures.size()) {
+            } else if (index > 0 && index <= otherFeatures.size()) {
                 while (true) {
                     int level = input.scanPositiveIntWithExit("Please enter the level this feature should be"
                             + "placed in");
                     if (index < 0) {
                         return null;
                     }
-                    baseClass.addFeature(otherFeatures.get(index), level);
+                    baseClass.addFeature(otherFeatures.get(index - 1), level);
                     return baseClass;
                 }
             }
@@ -193,14 +193,14 @@ public class CharClassCreator extends AcceptsInput {
         }
         System.out.println("The features you can choose to add to this feature are:");
         for (int i = 0; i < otherFeatures.size(); i++) {
-            System.out.println("[" + i + "] " + otherFeatures.get(i).getName());
+            System.out.println("[" + (i + 1) + "] " + otherFeatures.get(i).getName());
         }
         while (true) {
             int index = input.scanPositiveIntWithExit("Please enter the index of your selected feature");
             if (index < 0) {
                 return null;
-            } else if (index < otherFeatures.size()) {
-                baseClass.addFeature(otherFeatures.get(index));
+            } else if (index > 0 && index <= otherFeatures.size()) {
+                baseClass.addFeature(otherFeatures.get(index - 1));
                 return baseClass;
             }
         }
