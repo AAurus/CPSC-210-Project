@@ -31,8 +31,8 @@ public class CharClassTest {
     private Proficiency testProficiency3 = new Proficiency("Short Swords", new BigDecimal("2"));
 
     private ArrayList<Proficiency> proficiencyList = new ArrayList<>(ListOfHelper.listOf(testProficiency1,
-            testProficiency2,
-            testProficiency3));
+                                                                                         testProficiency2,
+                                                                                         testProficiency3));
     private ArrayList<Feature> featureList = new ArrayList<>(ListOfHelper.listOf(testFeature1, testFeature2));
     private ArrayList<InventoryItem> itemList = new ArrayList<>(ListOfHelper.listOf(testItem1, testItem2));
 
@@ -41,10 +41,10 @@ public class CharClassTest {
         testSubClass1 = new CharClass("Test Subclass 1", new ArrayList<>());
         testSubClass2 = new CharClass("Test Subclass 2", featureList);
         testEmptyClass = new CharClass("Test Empty Class", new ArrayList<>(), new ArrayList<>(),
-                                                      new ArrayList<>(), new ArrayList<>(),
-                                                      new ArrayList<>(), 3, 6);
+                                       new ArrayList<>(), new ArrayList<>(),
+                                       new ArrayList<>(), 3, 6);
         testFullClass = new CharClass("Test Full Class", proficiencyList, proficiencyList,
-                featureList, itemList, new ArrayList<>(ListOfHelper.listOf(testSubClass1, testSubClass2)), 3, 6);
+                                      featureList, itemList, new ArrayList<>(ListOfHelper.listOf(testSubClass1, testSubClass2)), 3, 6);
     }
 
     @Test
@@ -357,24 +357,29 @@ public class CharClassTest {
         scoreModMap1.put(ScoreType.CON_SAVE, new Modifier(ModifierType.BASE, BigDecimal.ZERO));
         HashMap<ScoreType, Modifier> scoreModMap2 = new HashMap<>();
         scoreModMap2.put(ScoreType.DEX_SAVE, new Modifier(ModifierType.BASE, BigDecimal.ONE));
+        HashMap<ScoreType, Modifier> scoreModMap3 = new HashMap<>();
+        scoreModMap3.put(ScoreType.STRENGTH, new Modifier(ModifierType.BASE, BigDecimal.ONE));
+        testEmptyClass.addFeature(new Feature("Test Score Feature 3", ScoreType.STRENGTH,
+                                              new Modifier(ModifierType.BASE, BigDecimal.ONE)));
         testEmptyClass.addFeature(new Feature("Test Score Feature 1", ScoreType.CON_SAVE,
-                new Modifier(ModifierType.BASE, BigDecimal.ZERO)), 2);
+                                              new Modifier(ModifierType.BASE, BigDecimal.ZERO)), 2);
         testSubClass1.addFeature(new Feature("Test Score Feature 2", ScoreType.DEX_SAVE,
-                new Modifier(ModifierType.BASE, BigDecimal.ONE)));
+                                             new Modifier(ModifierType.BASE, BigDecimal.ONE)));
         testEmptyClass.addSubClass(testSubClass1);
 
-        Assertions.assertTrue(testEmptyClass.getAllFeatureScoreMods().isEmpty());
+        Assertions.assertEquals(1, testEmptyClass.getAllFeatureScoreMods().size());
+        Assertions.assertTrue(testEmptyClass.getAllFeatureScoreMods().contains(scoreModMap3));
 
         testEmptyClass.levelUp();
-        Assertions.assertEquals(1, testEmptyClass.getAllFeatureScoreMods().size());
+        Assertions.assertEquals(2, testEmptyClass.getAllFeatureScoreMods().size());
         Assertions.assertTrue(testEmptyClass.getAllFeatureScoreMods().contains(scoreModMap1));
 
         testEmptyClass.setLevel(testEmptyClass.getSubClassLevel());
-        Assertions.assertEquals(1, testEmptyClass.getAllFeatureScoreMods().size());
+        Assertions.assertEquals(2, testEmptyClass.getAllFeatureScoreMods().size());
         Assertions.assertTrue(testEmptyClass.getAllFeatureScoreMods().contains(scoreModMap1));
 
         testEmptyClass.selectSubclass(0);
-        Assertions.assertEquals(2, testEmptyClass.getAllFeatureScoreMods().size());
+        Assertions.assertEquals(3, testEmptyClass.getAllFeatureScoreMods().size());
         Assertions.assertTrue(testEmptyClass.getAllFeatureScoreMods().contains(scoreModMap2));
     }
 

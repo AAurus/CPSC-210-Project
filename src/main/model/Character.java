@@ -77,13 +77,13 @@ public class Character {
         ArrayList<HashMap<ScoreType, Modifier>> allProfMods = getAllScoreProficiencyMods();
 
         HashMap<ScoreType, Modifier> baseAbilityScores = ScoreType.initBaseScoreMods(rolledAbilityScores);
-        ScoreType.applyAllScoresToList(baseAbilityScores, allScoreMods, ScoreType.BASE_SCORES);
-        ScoreType.applyAllScoresToList(baseAbilityScores, allProfMods, ScoreType.BASE_SCORES);
+        baseAbilityScores = ScoreType.applyAllScoresToList(baseAbilityScores, allScoreMods, ScoreType.BASE_SCORES);
+        baseAbilityScores = ScoreType.applyAllScoresToList(baseAbilityScores, allProfMods, ScoreType.BASE_SCORES);
         abilityScores = ScoreType.finalizeScoreMods(baseAbilityScores);
 
         HashMap<ScoreType, Modifier> checkScores = ScoreType.initCheckScoreMods(abilityScores);
-        ScoreType.applyAllScoresToList(checkScores, allScoreMods, ScoreType.CHECK_SCORES);
-        ScoreType.applyAllScoresToList(checkScores, allProfMods, ScoreType.CHECK_SCORES);
+        checkScores = ScoreType.applyAllScoresToList(checkScores, allScoreMods, ScoreType.CHECK_SCORES);
+        checkScores = ScoreType.applyAllScoresToList(checkScores, allProfMods, ScoreType.CHECK_SCORES);
         skillThrowBonuses = ScoreType.finalizeScoreMods(checkScores);
     }
 

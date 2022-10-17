@@ -191,7 +191,7 @@ public enum ScoreType {
         for (ScoreType s : ScoreType.values()) {
             if (base.containsKey(s)) {
                 if (apply.containsKey(s) && apply.get(s).getType().equals(applyType)) {
-                    result.put(s, base.get(s).apply(apply.get(s)));
+                    result.put(s, apply.get(s).apply(base.get(s)));
                 } else {
                     result.put(s, base.get(s));
                 }
