@@ -61,7 +61,16 @@ public class CharClass extends HasFeatures {
         this.name = name;
         this.baseProficiencies = new ArrayList<>();
         this.multiClassProficiencies = new ArrayList<>();
-        this.features = features;
+        this.features = this.features = new ArrayList<>();
+        for (Feature f : features) {
+            if (f.getName().matches("Level\\s(\\d*)\\sFeatures") && f.getType().equals(FeatureType.MULTI)) {
+                int featureIndex = Integer.parseInt(f.getName().replaceAll("[^0-9]", "")) - 1;
+                initFeatures(featureIndex);
+                features.set(featureIndex, f);
+            } else {
+                addFeature(f, 1);
+            }
+        }
         this.equipment = new ArrayList<>();
         this.subClasses = new ArrayList<>();
         this.subClassLevel = -1;
@@ -170,6 +179,10 @@ public class CharClass extends HasFeatures {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setHitDie(int hitDie) {
+        this.hitDie = hitDie;
     }
 
     public void addEquipment(InventoryItem item) {

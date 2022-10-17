@@ -64,7 +64,7 @@ public enum ScoreType {
     public static HashMap<ScoreType, Modifier> initCheckScoreMods(HashMap<ScoreType, Integer> baseScores) {
         HashMap<ScoreType, Modifier> result = new HashMap<>();
         for (ScoreType s : ScoreType.CHECK_SCORES) {
-            String stGroup = s.name().substring(0,3);
+            String stGroup = s.name().substring(0,4);
             result.put(s, new Modifier(Math.floorDiv((baseScores.get(getBaseScoreFromHeader(stGroup)) - 10), 2)));
         }
         return result;

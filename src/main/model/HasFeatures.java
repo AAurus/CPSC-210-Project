@@ -6,7 +6,7 @@ import enums.FeatureType;
 import enums.ScoreType;
 
 public abstract class HasFeatures {
-    protected List<Feature> features;
+    protected ArrayList<Feature> features;
 
     //EFFECTS: returns list of hashmaps of all features that provide score modifiers
     public ArrayList<HashMap<ScoreType, Modifier>> getAllFeatureScoreMods() {

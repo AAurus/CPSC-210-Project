@@ -7,7 +7,6 @@ Expected functionality (extended functionality in brackets):
 - Ability to read character sheets as defined by a custom file format
 - Ability to write character sheets as defined by a custom file format
 - Ability to create character sheets using standard 5th Edition game rules
-- Ability to calculate a dice roll, using the Troll format as input
 
 
 - (Ability to represent a current combat encounter with multiple characters)

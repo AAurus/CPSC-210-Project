@@ -47,6 +47,26 @@ public class InventoryItem {
         return feature;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public void setWeight(BigDecimal weight) {
+        this.weight = weight;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setFeature(Feature feature) {
+        this.feature = feature;
+    }
+
     //MODIFIES: from, to
     //EFFECTS: moves item from one inventory to another
     public static void moveItem(ArrayList<InventoryItem> from, ArrayList<InventoryItem> to, String itemName) {
@@ -56,6 +76,14 @@ public class InventoryItem {
                 from.remove(i);
             }
         }
+    }
+
+    //MODIFIES: from, to
+    //EFFECTS: moves item from one inventory to another
+    public static void moveItem(ArrayList<InventoryItem> from, ArrayList<InventoryItem> to, int index) {
+        InventoryItem item = from.get(index);
+        to.add(item);
+        from.remove(item);
     }
 
     //EFFECTS: returns total weight of all items in list

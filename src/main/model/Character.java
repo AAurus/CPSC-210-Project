@@ -11,6 +11,7 @@ import java.util.List;
 public class Character {
     /// A representation of a DnD Character.
 
+    private String name;
     private HashMap<ScoreType, Integer> rolledAbilityScores;
     private HashMap<ScoreType, Integer> abilityScores;
     private HashMap<ScoreType, Integer> skillThrowBonuses;
@@ -23,8 +24,18 @@ public class Character {
     private ArrayList<InventoryItem> carriedItems;
     private ArrayList<InventoryItem> inventoryItems;
 
-    public Character(int strength, int dexterity, int constitution,
+    public Character(String name, int strength, int dexterity, int constitution,
                      int intelligence, int wisdom, int charisma) {
+        this.name = name;
+        rolledAbilityScores = new HashMap<>();
+        abilityScores = new HashMap<>();
+        skillThrowBonuses = new HashMap<>();
+        stats = new HashMap<>();
+        hitDice = new HashMap<>();
+        equippedItems = new ArrayList<>();
+        carriedItems = new ArrayList<>();
+        inventoryItems = new ArrayList<>();
+        classes = new ArrayList<>();
         loadBaseScores(strength, dexterity, constitution, intelligence, wisdom, charisma);
         updateScores();
         updateStats();
@@ -119,7 +130,9 @@ public class Character {
             result.addAll(c.getAllFeatureScoreMods());
         }
         for (InventoryItem i : equippedItems) {
-            result.addAll(i.getFeature().getAllScoreModifiers());
+            if (i.getFeature() != null) {
+                result.addAll(i.getFeature().getAllScoreModifiers());
+            }
         }
 
         return result;
@@ -143,7 +156,9 @@ public class Character {
             }
         }
         for (InventoryItem i : equippedItems) {
-            result.addAll(i.getFeature().getAllProficiencyModifiers(profBonus));
+            if (i.getFeature() != null) {
+                result.addAll(i.getFeature().getAllProficiencyModifiers(profBonus));
+            }
         }
 
         return result;
@@ -163,7 +178,9 @@ public class Character {
             features.addAll(c.getAllFeaturesLevelled());
         }
         for (InventoryItem i : equippedItems) {
-            features.add(i.getFeature());
+            if (i.getFeature() != null) {
+                features.add(i.getFeature());
+            }
         }
         List<Feature> statFeatures = Feature.getAllReachableFeaturesOfType(features, FeatureType.STAT);
         for (Feature f : statFeatures) {
@@ -247,6 +264,14 @@ public class Character {
         return inventoryItems;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public void setRace(CharRace race) {
         this.race = race;
         reinitializeCharacter();
@@ -307,6 +332,20 @@ public class Character {
 
     public void addClass(CharClass charClass) {
         classes.add(charClass);
+        reinitializeCharacter();
+    }
+
+    public void removeClass(String className) {
+        for (CharClass c : classes) {
+            if (className.trim().equals(c.getName())) {
+                classes.remove(c);
+                break;
+            }
+        }
+    }
+
+    public void removeClass(int index) {
+        classes.remove(index);
         reinitializeCharacter();
     }
 

@@ -168,6 +168,11 @@ public class Feature {
         this.description = desc;
     }
 
+    public Feature(String name, List<Feature> features, boolean choice, int choiceCount, String desc) {
+        this(name, features, choice, choiceCount);
+        this.description = desc;
+    }
+
     public String getName() {
         return name;
     }
