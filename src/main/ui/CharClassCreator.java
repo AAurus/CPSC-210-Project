@@ -11,7 +11,7 @@ public class CharClassCreator extends AcceptsInput {
     //EFFECTS: creates a new CharRace from user input
     public CharClass createClass(List<Feature> otherFeatures, List<CharClass> otherClasses,
                                  List<InventoryItem> otherItems) {
-        String name = input.scanName("Race");
+        String name = input.scanName("Class");
         if (name == null) {
             return null;
         }
