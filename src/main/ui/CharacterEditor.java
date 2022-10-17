@@ -10,6 +10,7 @@ import java.util.List;
 public class CharacterEditor extends AcceptsInput {
     /// A helper class for Main. Manages all character editing.
 
+    //EFFECTS: main menuing; edits a character and returns it
     public Character edit(Character baseCharacter, List<CharClass> classes,
                           List<CharRace> races, List<CharBackground> backgrounds,
                           List<InventoryItem> items) {
@@ -71,14 +72,16 @@ public class CharacterEditor extends AcceptsInput {
         return baseCharacter;
     }
 
+    //MODIFIES: baseCharacter
     private void changeName(Character baseCharacter) {
         baseCharacter.setName(input.scanName("Please enter a new name:"));
     }
 
+    //MODIFIES: baseCharacter
     private void changeRace(Character baseCharacter, List<CharRace> races) {
         System.out.println("Races Available:");
         for (int i = 0; i < races.size(); i++) {
-            System.out.println("[" + Integer.toString(i + 1) + "] " + races.get(i).getName());
+            System.out.println("[" + (i + 1) + "] " + races.get(i).getName());
         }
         while (true) {
             int raceIndex = input.scanPositiveIntWithExit("Please choose a new race by its index:");
@@ -97,12 +100,13 @@ public class CharacterEditor extends AcceptsInput {
         }
     }
 
+    //MODIFIES: baseCharacter
     //EFFECTS: helper method; selects a subrace for the character
     private void selectSubRace(Character baseCharacter) {
         ArrayList<CharRace> races = baseCharacter.getRace().getSubRaces();
         System.out.println("Subraces Available:");
         for (int i = 0; i < races.size(); i++) {
-            System.out.println("[" + Integer.toString(i + 1) + "] " + races.get(i).getName());
+            System.out.println("[" + (i + 1) + "] " + races.get(i).getName());
         }
         while (true) {
             int raceIndex = input.scanPositiveIntWithExit("Please choose a new subrace by its index:");
@@ -116,10 +120,11 @@ public class CharacterEditor extends AcceptsInput {
         }
     }
 
+    //MODIFIES: baseCharacter
     private void changeBackground(Character baseCharacter, List<CharBackground> backgrounds) {
         System.out.println("Backgrounds Available:");
         for (int i = 0; i < backgrounds.size(); i++) {
-            System.out.println("[" + Integer.toString(i + 1) + "] " + backgrounds.get(i).getName());
+            System.out.println("[" + (i + 1) + "] " + backgrounds.get(i).getName());
         }
         while (true) {
             int backgroundIndex = input.scanPositiveIntWithExit("Please choose a new background by its index:");
@@ -133,10 +138,11 @@ public class CharacterEditor extends AcceptsInput {
         }
     }
 
+    //MODIFIES: baseCharacter
     private void addClass(Character baseCharacter, List<CharClass> classes) {
         System.out.println("Classes Available:");
         for (int i = 0; i < classes.size(); i++) {
-            System.out.println("[" + Integer.toString(i + 1) + "] " + classes.get(i).getName());
+            System.out.println("[" + (i + 1) + "] " + classes.get(i).getName());
         }
         while (true) {
             int classIndex = input.scanPositiveIntWithExit("Please choose a class by its index:");
@@ -150,11 +156,12 @@ public class CharacterEditor extends AcceptsInput {
         }
     }
 
+    //MODIFIES: baseCharacter
     private void removeClass(Character baseCharacter) {
         ArrayList<CharClass> classes = baseCharacter.getClasses();
         System.out.println("Classes Available:");
         for (int i = 0; i < classes.size(); i++) {
-            System.out.println("[" + Integer.toString(i + 1) + "] " + classes.get(i).getName());
+            System.out.println("[" + (i + 1) + "] " + classes.get(i).getName());
         }
         while (true) {
             int classIndex = input.scanPositiveIntWithExit("Please choose a class by its index:");
@@ -168,11 +175,12 @@ public class CharacterEditor extends AcceptsInput {
         }
     }
 
+    //MODIFIES: baseCharacter
     private void levelUp(Character baseCharacter) {
         ArrayList<CharClass> classes = baseCharacter.getClasses();
         System.out.println("Classes Available:");
         for (int i = 0; i < classes.size(); i++) {
-            System.out.println("[" + Integer.toString(i + 1) + "] " + classes.get(i).getName());
+            System.out.println("[" + (i + 1) + "] " + classes.get(i).getName());
         }
         while (true) {
             int classIndex = input.scanPositiveIntWithExit("Please choose a class by its index:");
@@ -186,10 +194,11 @@ public class CharacterEditor extends AcceptsInput {
         }
     }
 
+    //MODIFIES: baseCharacter
     private void addItem(Character baseCharacter, List<InventoryItem> items) {
         System.out.println("Items Available:");
         for (int i = 0; i < items.size(); i++) {
-            System.out.println("[" + Integer.toString(i + 1) + "] " + items.get(i).getName());
+            System.out.println("[" + (i + 1) + "] " + items.get(i).getName());
         }
         while (true) {
             int itemIndex = input.scanPositiveIntWithExit("Please choose an item by its index:");
@@ -212,6 +221,7 @@ public class CharacterEditor extends AcceptsInput {
         }
     }
 
+    //MODIFIES: baseCharacter
     private void removeItem(Character baseCharacter) {
         ArrayList<InventoryItem> items = selectInventory(baseCharacter,
                                                          "Please choose an inventory to remove from");
@@ -220,7 +230,7 @@ public class CharacterEditor extends AcceptsInput {
         }
         System.out.println("Items Available:");
         for (int i = 0; i < items.size(); i++) {
-            System.out.println("[" + Integer.toString(i + 1) + "] " + items.get(i).getName());
+            System.out.println("[" + (i + 1) + "] " + items.get(i).getName());
         }
         while (true) {
             int itemIndex = input.scanPositiveIntWithExit("Please choose an item by its index:");
@@ -234,6 +244,7 @@ public class CharacterEditor extends AcceptsInput {
         }
     }
 
+    //MODIFIES: baseCharacter
     private void moveItem(Character baseCharacter) {
         ArrayList<InventoryItem> itemsFrom = selectInventory(baseCharacter,"Please choose an inventory to move from");
         if (itemsFrom == null) {
@@ -241,7 +252,7 @@ public class CharacterEditor extends AcceptsInput {
         }
         System.out.println("Items Available:");
         for (int i = 0; i < itemsFrom.size(); i++) {
-            System.out.println("[" + Integer.toString(i + 1) + "] " + itemsFrom.get(i).getName());
+            System.out.println("[" + (i + 1) + "] " + itemsFrom.get(i).getName());
         }
         while (true) {
             int itemIndex = input.scanPositiveIntWithExit("Please choose an item by its index:");
@@ -260,6 +271,7 @@ public class CharacterEditor extends AcceptsInput {
         }
     }
 
+    //MODIFIES: baseCharacter
     //EFFECTS: helper method; selects an index corresponding to one of the three inventories that a character has
     private int selectInventoryIndex(String label) {
         int inventorySelect = 0;
@@ -278,6 +290,7 @@ public class CharacterEditor extends AcceptsInput {
         }
     }
 
+    //MODIFIES: baseCharacter
     //EFFECTS: helper method; selects one of the three actual ArrayList inventories that a character has
     private ArrayList<InventoryItem> selectInventory(Character baseCharacter, String label) {
         switch (selectInventoryIndex(label)) {
