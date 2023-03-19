@@ -1,16 +1,15 @@
 package enums;
 
 import model.Modifier;
-import utility.ListOfHelper;
+import utility.Utility;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public enum ScoreType {
-    /// An enumeration to capture the six main ability scores.
+    /// An enumeration to capture the six main ability scores and their associated skill scores.
     STRENGTH,
     DEXTERITY,
     CONSTITUTION,
@@ -30,6 +29,7 @@ public enum ScoreType {
     CON_SAVE,
     INT_SAVE,
     WIS_SAVE,
+    CHR_SAVE,
 
     STR_ATHLETICS,
     DEX_ACROBATICS,
@@ -49,15 +49,6 @@ public enum ScoreType {
     CHR_PERFORMANCE,
     CHR_PERSUASION,
     ETC;
-
-    //EFFECTS: replicates ListOfHelper.listOf(E... elements) for ScoreType
-    public static List<ScoreType> listOf(ScoreType... scoreTypes) {
-        ArrayList<ScoreType> result = new ArrayList<>();
-        for (ScoreType s : scoreTypes) {
-            result.add(s);
-        }
-        return result;
-    }
 
     //REQUIRES: STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA are all keyed to values in baseScores
     //EFFECTS: initializes a check modifier HashMap using another HashMap containing base ability scores
@@ -112,34 +103,17 @@ public enum ScoreType {
         }
     }
 
-    public static final List<ScoreType> BASE_SCORES = ListOfHelper.listOf(STRENGTH,     DEXTERITY,
-                                                                          CONSTITUTION, INTELLIGENCE,
-                                                                          WISDOM,       CHARISMA);
+    public static final List<ScoreType> BASE_SCORES = Utility.listOf(STRENGTH, DEXTERITY,
+                                                                     CONSTITUTION, INTELLIGENCE,
+                                                                     WISDOM, CHARISMA);
 
-    public static final List<ScoreType> CHECK_SCORES = ListOfHelper.listOf(ScoreType.values()).subList(6,
+    public static final List<ScoreType> CHECK_SCORES = Utility.listOf(ScoreType.values()).subList(6,
                                                                ScoreType.values().length - 1);
 
     public static HashMap<ScoreType, Modifier> generateEmptyScoreMap() {
         HashMap<ScoreType, Modifier> result = new HashMap<>();
         for (ScoreType s : ScoreType.values()) {
             result.put(s, new Modifier(ModifierType.BASE, BigDecimal.ZERO));
-        }
-        return result;
-    }
-
-    //REQUIRES: all modifiers in base should be of type BASE, and every filled key in apply should also have a value
-    //          in base
-    //EFFECTS: applies all score changes from ArrayList of HashMap<ScoreType, Modifier> to one base HashMap
-    public static HashMap<ScoreType, Modifier> applyAllScoresToAll(HashMap<ScoreType, Modifier> base,
-                                                                   List<HashMap<ScoreType, Modifier>> apply) {
-        HashMap<ScoreType, Modifier> result = new HashMap<>();
-        for (ScoreType s : ScoreType.values()) {
-            result.put(s, base.get(s));
-        }
-        for (int i = 0; i < Modifier.OPERATIONS_ORDER.length; i++) {
-            for (HashMap<ScoreType, Modifier> score : apply) {
-                result = applyScores(result, score, Modifier.OPERATIONS_ORDER[i]);
-            }
         }
         return result;
     }
@@ -157,24 +131,6 @@ public enum ScoreType {
         for (int i = 0; i < Modifier.OPERATIONS_ORDER.length; i++) {
             for (HashMap<ScoreType, Modifier> score : apply) {
                 result = applyScores(result, score, Modifier.OPERATIONS_ORDER[i]);
-            }
-        }
-        return result;
-    }
-
-    //REQUIRES: all modifiers in base should be of type BASE, and every filled key in apply should also have a value
-    //          in base
-    //EFFECTS: applies score changes from one HashMap<ScoreType, Modifier> to another
-    public static HashMap<ScoreType, Modifier> applyScoresToAll(HashMap<ScoreType, Modifier> base,
-                                                                HashMap<ScoreType, Modifier> apply) {
-        HashMap<ScoreType, Modifier> result = new HashMap<>();
-        for (ScoreType s : ScoreType.values()) {
-            if (base.containsKey(s)) {
-                if (apply.containsKey(s)) {
-                    result.put(s, base.get(s).apply(apply.get(s)));
-                } else {
-                    result.put(s, base.get(s));
-                }
             }
         }
         return result;

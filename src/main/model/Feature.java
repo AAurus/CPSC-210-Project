@@ -3,13 +3,14 @@ package model;
 import enums.FeatureType;
 import enums.ScoreType;
 import enums.StatType;
-import utility.ListOfHelper;
+import utility.Utility;
 
 import java.math.BigDecimal;
 import java.util.*;
 
 public class Feature {
     ///A representation of a D&D Character Feature, that may produce various effects.
+    public static final int HASH_MULTIPLIER = 73;
     public static final int DEFAULT_MAXIMUM_CHOICES = 1;
 
     private final String name;
@@ -17,12 +18,37 @@ public class Feature {
     private final HashMap<ScoreType, Modifier> scoreMod;
     private final HashMap<StatType, Modifier> statMod;
     private final Proficiency proficiency;
-    private final Attack attack;
     private final List<Feature> features;
     private final boolean choice;
     private final int choiceCount;
-    private List<Integer> choices;
+    private ArrayList<Integer> choices;
     private String description;
+
+    public Feature(Feature feature) {
+        this.name = feature.getName();
+        this.type = feature.getType();
+        this.scoreMod = cloneScoreMod(feature.getScoreMod());
+        this.statMod = cloneStatMod(feature.getStatMod());
+        this.proficiency = feature.getProficiency();
+        if (feature.getFeatures() != null) {
+            this.features = new ArrayList<>();
+            for (Feature f : feature.getFeatures()) {
+                this.features.add(new Feature(f));
+            }
+        } else {
+            this.features = null;
+        }
+        this.choice = feature.isChoice();
+        this.choiceCount = feature.getChoiceCount();
+        if (feature.isChoice()) {
+            this.choices = new ArrayList();
+        } else {
+            this.choices = null;
+        }
+        this.description = feature.getDescription();
+
+        Utility.logEvent("Feature duplicated from " + feature.getName());
+    }
 
     public Feature(String name, ScoreType slot, Modifier mod) {
         this.name = name;
@@ -31,12 +57,13 @@ public class Feature {
         scoreMod.put(slot, mod);
         this.statMod = null;
         this.proficiency = null;
-        this.attack = null;
         this.features = null;
         this.choice = false;
         this.choiceCount = 0;
         this.choices = null;
         this.description = "";
+
+        Utility.logEvent("New Score feature created: " + name);
     }
 
     public Feature(String name, StatType slot, Modifier mod) {
@@ -46,12 +73,13 @@ public class Feature {
         this.statMod = new HashMap<>();
         statMod.put(slot, mod);
         this.proficiency = null;
-        this.attack = null;
         this.features = null;
         this.choice = false;
         this.choiceCount = 0;
         this.choices = null;
         this.description = "";
+
+        Utility.logEvent("New Stat feature created: " + name);
     }
 
     public Feature(String name, Proficiency proficiency) {
@@ -60,26 +88,13 @@ public class Feature {
         this.scoreMod = null;
         this.statMod = null;
         this.proficiency = proficiency;
-        this.attack = null;
         this.features = null;
         this.choice = false;
         this.choiceCount = 0;
         this.choices = null;
         this.description = "";
-    }
 
-    public Feature(String name, Attack attack) {
-        this.name = name;
-        this.type = FeatureType.ATTACK;
-        this.scoreMod = null;
-        this.statMod = null;
-        this.proficiency = null;
-        this.attack = attack;
-        this.features = null;
-        this.choice = false;
-        this.choiceCount = 0;
-        this.choices = null;
-        this.description = "";
+        Utility.logEvent("New Proficiency feature created: " + name);
     }
 
     public Feature(String name, List<Feature> features) {
@@ -88,12 +103,13 @@ public class Feature {
         this.scoreMod = null;
         this.statMod = null;
         this.proficiency = null;
-        this.attack = null;
         this.features = features;
         this.choice = false;
         this.choiceCount = 0;
         this.choices = null;
         this.description = "";
+
+        Utility.logEvent("New Multi-Feature feature created: " + name);
     }
 
     public Feature(String name, List<Feature> features, boolean choice) {
@@ -102,12 +118,13 @@ public class Feature {
         this.scoreMod = null;
         this.statMod = null;
         this.proficiency = null;
-        this.attack = null;
         this.features = features;
         this.choice = choice;
         this.choiceCount = DEFAULT_MAXIMUM_CHOICES;
         this.choices = new ArrayList<>();
         this.description = "";
+
+        Utility.logEvent("New Single-Choice feature created: " + name);
     }
 
     public Feature(String name, List<Feature> features, boolean choice, int choiceCount) {
@@ -116,12 +133,28 @@ public class Feature {
         this.scoreMod = null;
         this.statMod = null;
         this.proficiency = null;
-        this.attack = null;
         this.features = features;
         this.choice = choice;
         this.choiceCount = choiceCount;
         this.choices = new ArrayList<>();
         this.description = "";
+
+        Utility.logEvent("New " + choiceCount + "-Choice feature created: " + name);
+    }
+
+    public Feature(String name, List<Feature> features, boolean choice, int choiceCount, ArrayList<Integer> choices) {
+        this.name = name;
+        this.type = FeatureType.MULTI;
+        this.scoreMod = null;
+        this.statMod = null;
+        this.proficiency = null;
+        this.features = features;
+        this.choice = choice;
+        this.choiceCount = choiceCount;
+        this.choices = choices;
+        this.description = "";
+
+        Utility.logEvent("New " + choiceCount + "-Choice feature created: " + name + " with pre-loaded choices");
     }
 
     public Feature(String name, String desc) {
@@ -130,12 +163,13 @@ public class Feature {
         this.scoreMod = null;
         this.statMod = null;
         this.proficiency = null;
-        this.attack = null;
         this.features = null;
         this.choice = false;
         this.choiceCount = 0;
         this.choices = null;
         this.description = desc;
+
+        Utility.logEvent("New description-only feature created: " + name);
     }
 
     public Feature(String name, ScoreType slot, Modifier val, String desc) {
@@ -153,11 +187,6 @@ public class Feature {
         this.description = desc;
     }
 
-    public Feature(String name, Attack attack, String desc) {
-        this(name, attack);
-        this.description = desc;
-    }
-
     public Feature(String name, List<Feature> features, String desc) {
         this(name, features);
         this.description = desc;
@@ -170,6 +199,12 @@ public class Feature {
 
     public Feature(String name, List<Feature> features, boolean choice, int choiceCount, String desc) {
         this(name, features, choice, choiceCount);
+        this.description = desc;
+    }
+
+    public Feature(String name, List<Feature> features, boolean choice, int choiceCount,
+                   ArrayList<Integer> choices, String desc) {
+        this(name, features, choice, choiceCount, choices);
         this.description = desc;
     }
 
@@ -191,10 +226,6 @@ public class Feature {
 
     public Proficiency getProficiency() {
         return proficiency;
-    }
-
-    public Attack getAttack() {
-        return attack;
     }
 
     public List<Feature> getFeatures() {
@@ -244,14 +275,44 @@ public class Feature {
                 choices.add(choiceIndex);
                 choices.remove(0);
             }
+
+            Utility.logEvent("Feature " + features.get(choiceIndex).getName() + " chosen from feature "
+                             + name);
         }
     }
 
 
 
+    //EFFECTS: deep copies a HashMap<ScoreType, Modifier> and returns it
+    private HashMap<ScoreType, Modifier> cloneScoreMod(HashMap<ScoreType, Modifier> source) {
+        if (source != null) {
+            HashMap<ScoreType, Modifier> result = new HashMap<>();
+            for (ScoreType s : source.keySet()) {
+                result.put(s, source.get(s).clone());
+            }
+            return result;
+        } else {
+            return null;
+        }
+    }
+
+    //EFFECTS: deep copies a HashMap<ScoreType, Modifier> and returns it
+    private HashMap<StatType, Modifier> cloneStatMod(HashMap<StatType, Modifier> source) {
+        if (source != null) {
+            HashMap<StatType, Modifier> result = new HashMap<>();
+            for (StatType s : source.keySet()) {
+                result.put(s, source.get(s).clone());
+            }
+            return result;
+        } else {
+            return null;
+        }
+    }
+
+
     //EFFECTS: compiles all reachable score features into one big list of hashmaps
     public List<HashMap<ScoreType, Modifier>> getAllScoreModifiers() {
-        List<Feature> scoreFeatures = getAllReachableFeaturesOfType(ListOfHelper.listOf(this), FeatureType.SCORE);
+        List<Feature> scoreFeatures = getAllReachableFeaturesOfType(Utility.listOf(this), FeatureType.SCORE);
         List<HashMap<ScoreType, Modifier>> result = new ArrayList<>();
         for (Feature f : scoreFeatures) {
             result.add(f.getScoreMod());
@@ -261,7 +322,7 @@ public class Feature {
 
     //EFFECTS: compiles all reachable proficiency features into one big list of hashmaps
     public List<HashMap<ScoreType, Modifier>> getAllProficiencyModifiers(BigDecimal profBonus) {
-        List<Feature> profFeatures = getAllReachableFeaturesOfType(ListOfHelper.listOf(this), FeatureType.PROFICIENCY);
+        List<Feature> profFeatures = getAllReachableFeaturesOfType(Utility.listOf(this), FeatureType.PROFICIENCY);
         List<HashMap<ScoreType, Modifier>> result = new ArrayList<>();
         for (Feature f : profFeatures) {
             result.add(f.getProficiency().generateScoreMap(profBonus));
@@ -271,9 +332,9 @@ public class Feature {
 
     //EFFECTS: compiles all reachable stat features into one big list of hashmaps
     public List<HashMap<StatType, Modifier>> getAllStatModifiers() {
-        List<Feature> scoreFeatures = getAllReachableFeaturesOfType(ListOfHelper.listOf(this), FeatureType.STAT);
+        List<Feature> statFeatures = getAllReachableFeaturesOfType(Utility.listOf(this), FeatureType.STAT);
         List<HashMap<StatType, Modifier>> result = new ArrayList<>();
-        for (Feature f : scoreFeatures) {
+        for (Feature f : statFeatures) {
             result.add(f.getStatMod());
         }
         return result;
@@ -313,8 +374,8 @@ public class Feature {
             } else if (f.getType().equals(FeatureType.MULTI)) {
                 if (f.isChoice()) {
                     for (int choice : f.getChoices()) {
-                        result.addAll(getAllReachableFeaturesOfType(ListOfHelper.listOf(f.getFeatures().get(choice)),
-                                type));
+                        result.addAll(getAllReachableFeaturesOfType(Utility.listOf(f.getFeatures().get(choice)),
+                                                                    type));
                     }
                 } else {
                     result.addAll(getAllReachableFeaturesOfType(f.getFeatures(), type));
@@ -348,7 +409,7 @@ public class Feature {
                     result.add(f);
                     result.addAll(f.getFeatures());
                 } else {
-                    result.addAll(getAllSurfaceFeaturesWithChoice(f.getFeatures()));
+                    result.addAll(getAllFeaturesWithChoice(f.getFeatures()));
                 }
             }
         }
@@ -364,13 +425,12 @@ public class Feature {
                     result.add(f);
                     result.addAll(getAllReachableFeaturesWithChoice(f.getChosenFeatures()));
                 } else {
-                    result.addAll(getAllSurfaceFeaturesWithChoice(f.getFeatures()));
+                    result.addAll(getAllReachableFeaturesWithChoice(f.getFeatures()));
                 }
             }
         }
         return result;
     }
-
 
     //EFFECTS: returns true if this has same values as other
     @Override
@@ -387,9 +447,8 @@ public class Feature {
         boolean containerEqual = (this.containersEqual(other));
         boolean isChoiceEqual = (this.isChoice() == other.isChoice());
         boolean choiceCountEqual = (this.getChoiceCount() == other.getChoiceCount());
-        boolean choicesEqual = (this.getChosenFeatures().equals(other.getChosenFeatures()));
 
-        return (nameEqual && typeEqual && containerEqual && isChoiceEqual && choiceCountEqual && choicesEqual);
+        return (nameEqual && typeEqual && containerEqual && isChoiceEqual && choiceCountEqual);
     }
 
     //EFFECTS: helper for equals(), true if both features share the same values according to their type (since off-type
@@ -406,9 +465,6 @@ public class Feature {
             case PROFICIENCY:
                 result = (this.getProficiency().equals(other.getProficiency()));
                 break;
-            case ATTACK:
-                result = (this.getAttack().equals(other.getAttack()));
-                break;
             case MULTI:
                 result = (this.getFeatures().equals(other.getFeatures()));
                 break;
@@ -417,5 +473,21 @@ public class Feature {
                 break;
         }
         return result;
+    }
+
+    @Override
+    public int hashCode() {
+        ArrayList<Integer> hashComponents = new ArrayList<>();
+        hashComponents.add(name.hashCode());
+        hashComponents.add(type.hashCode());
+        hashComponents.add(description.hashCode());
+        hashComponents.add(Utility.hashIfAble(scoreMod));
+        hashComponents.add(Utility.hashIfAble(statMod));
+        hashComponents.add(Utility.hashIfAble(proficiency));
+        hashComponents.add(Utility.hashIfAble(features));
+        hashComponents.add(Boolean.hashCode(choice));
+        hashComponents.add(choiceCount);
+        hashComponents.add(Utility.hashIfAble(choices));
+        return Utility.hashCodeHelper(hashComponents, HASH_MULTIPLIER);
     }
 }

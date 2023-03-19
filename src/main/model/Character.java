@@ -1,6 +1,11 @@
 package model;
 
 import enums.*;
+import exceptions.ClassNotFoundException;
+import exceptions.FeatureNotFoundException;
+import exceptions.InventoryItemNotFoundException;
+import model.*;
+import utility.Utility;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -10,6 +15,7 @@ import java.util.List;
 
 public class Character {
     /// A representation of a DnD Character.
+    public static final int HASH_MULTIPLIER = 31;
 
     private String name;
     private HashMap<ScoreType, Integer> rolledAbilityScores;
@@ -17,9 +23,11 @@ public class Character {
     private HashMap<ScoreType, Integer> skillThrowBonuses;
     private HashMap<StatType, Integer> stats;
     private HashMap<Integer, Integer> hitDice;
-    private CharRace race;
-    private CharBackground background;
-    private ArrayList<CharClass> classes;
+    private String race;
+    private String background;
+    private ArrayList<String> classes;
+    private HashMap<String, Integer> classLevels;
+    private ArrayList<Feature> features;
     private ArrayList<InventoryItem> equippedItems;
     private ArrayList<InventoryItem> carriedItems;
     private ArrayList<InventoryItem> inventoryItems;
@@ -32,13 +40,17 @@ public class Character {
         skillThrowBonuses = new HashMap<>();
         stats = new HashMap<>();
         hitDice = new HashMap<>();
+        features = new ArrayList<>();
         equippedItems = new ArrayList<>();
         carriedItems = new ArrayList<>();
         inventoryItems = new ArrayList<>();
         classes = new ArrayList<>();
+        classLevels = new HashMap<>();
         loadBaseScores(strength, dexterity, constitution, intelligence, wisdom, charisma);
         updateScores();
         updateStats();
+
+        Utility.logEvent("New character created: " + name);
     }
 
     //MODIFIES: this
@@ -46,16 +58,6 @@ public class Character {
     public void reinitializeCharacter() {
         updateScores();
         updateStats();
-    }
-
-    //MODIFIES: this
-    //EFFECTS: initializes all values on character from race, background, classes, equipment, WIPING INVENTORY
-    public void initializeCharacter() {
-        reinitializeCharacter();
-        equippedItems = new ArrayList<>();
-        carriedItems = new ArrayList<>();
-        inventoryItems = new ArrayList<>();
-        initStarterEquipment();
     }
 
     //MODIFIES: this
@@ -95,16 +97,16 @@ public class Character {
         Modifier walkSpeed = new Modifier(0);
         for (HashMap<StatType, Modifier> mods : allStatMods) {
             if (mods.keySet().contains(StatType.HIT_POINT_CON_PER_LEVEL)) {
-                conPerLevel.apply(mods.get(StatType.HIT_POINT_CON_PER_LEVEL));
+                conPerLevel = mods.get(StatType.HIT_POINT_CON_PER_LEVEL).apply(conPerLevel);
             }
             if (mods.keySet().contains(StatType.WALK_SPEED)) {
-                walkSpeed.apply(mods.get(StatType.WALK_SPEED));
+                walkSpeed = mods.get(StatType.WALK_SPEED).apply(walkSpeed);
             }
         }
         HashMap<StatType, Modifier> charDeriveMap = new HashMap<>();
+        charDeriveMap.put(StatType.HIT_POINT_CON_PER_LEVEL, conPerLevel);
         charDeriveMap.put(StatType.MAX_HIT_POINTS, new Modifier(ModifierType.BASE, conPerLevel.getValue().multiply(
-                new BigDecimal(skillThrowBonuses.get(ScoreType.CON_CHECK) * getCharacterLevel()
-                        + getClassesHitPoints()))));
+                new BigDecimal(skillThrowBonuses.get(ScoreType.CON_CHECK) * getCharacterLevel()))));
         charDeriveMap.put(StatType.INITIATIVE_BONUS, new Modifier(skillThrowBonuses.get(ScoreType.DEX_CHECK)));
         charDeriveMap.put(StatType.DEXTERITY_ARMOR_BONUS, new Modifier(skillThrowBonuses.get(ScoreType.DEX_CHECK)));
         charDeriveMap.put(StatType.CARRY_CAPACITY, new Modifier(abilityScores.get(ScoreType.STRENGTH) * 15));
@@ -118,16 +120,8 @@ public class Character {
     //EFFECTS: returns all score modifiers from applied to this
     private ArrayList<HashMap<ScoreType, Modifier>> getAllScoreMods() {
         ArrayList<HashMap<ScoreType, Modifier>> result = new ArrayList<>();
-
-        if (race != null) {
-            result.addAll(race.getAllScores());
-            result.addAll(race.getAllFeatureScoreMods());
-        }
-        if (background != null) {
-            result.addAll(background.getAllFeatureScoreMods());
-        }
-        for (CharClass c : classes) {
-            result.addAll(c.getAllFeatureScoreMods());
+        for (Feature f : features) {
+            result.addAll(f.getAllScoreModifiers());
         }
         for (InventoryItem i : equippedItems) {
             if (i.getFeature() != null) {
@@ -141,19 +135,9 @@ public class Character {
     //EFFECTS: returns list of all proficiency-based score changes applied to this
     private ArrayList<HashMap<ScoreType, Modifier>> getAllScoreProficiencyMods() {
         BigDecimal profBonus = new BigDecimal(calculateProficiencyBonus());
-
         ArrayList<HashMap<ScoreType, Modifier>> result = new ArrayList<>();
-        if (race != null) {
-            result.addAll(race.getAllScoreProficienciesApplied(profBonus));
-        }
-        if (background != null) {
-            result.addAll(background.getAllScoreProficienciesApplied(profBonus));
-        }
-        if (!classes.isEmpty()) {
-            result.addAll(classes.get(0).getAllProficienciesApplied(profBonus, true));
-            for (int i = 1; i < classes.size(); i++) {
-                result.addAll(classes.get(i).getAllProficienciesApplied(profBonus, false));
-            }
+        for (Feature f : features) {
+            result.addAll(f.getAllProficiencyModifiers(profBonus));
         }
         for (InventoryItem i : equippedItems) {
             if (i.getFeature() != null) {
@@ -167,37 +151,15 @@ public class Character {
     //EFFECTS: returns list of all stat changes applied to this
     private ArrayList<HashMap<StatType, Modifier>> getAllStatMods() {
         ArrayList<HashMap<StatType, Modifier>> result = new ArrayList<>();
-        ArrayList<Feature> features = new ArrayList<>();
-        if (race != null) {
-            features.addAll(race.getFeatures());
-        }
-        if (background != null) {
-            features.addAll(background.getFeatures());
-        }
-        for (CharClass c : classes) {
-            features.addAll(c.getAllFeaturesLevelled());
+        for (Feature f : features) {
+            result.addAll(f.getAllStatModifiers());
         }
         for (InventoryItem i : equippedItems) {
             if (i.getFeature() != null) {
                 features.add(i.getFeature());
             }
         }
-        List<Feature> statFeatures = Feature.getAllReachableFeaturesOfType(features, FeatureType.STAT);
-        for (Feature f : statFeatures) {
-            result.add(f.getStatMod());
-        }
         return result;
-    }
-
-    //MODIFIES: this
-    //EFFECTS: adds all background and class starter equipment to inventory
-    private void initStarterEquipment() {
-        if (background != null) {
-            inventoryItems.addAll(background.getEquipment());
-        }
-        if (!classes.isEmpty()) {
-            inventoryItems.addAll(classes.get(0).getEquipment());
-        }
     }
 
     public HashMap<ScoreType, Integer> getRolledAbilityScores() {
@@ -216,40 +178,31 @@ public class Character {
         return stats;
     }
 
-    public CharRace getRace() {
+    public String getRace() {
         return race;
     }
 
-    public CharBackground getBackground() {
+    public String getBackground() {
         return background;
     }
 
-    public ArrayList<CharClass> getClasses() {
+    public ArrayList<String> getClasses() {
         return classes;
     }
 
-    public int getCharacterLevel() {
-        int result = 0;
-        for (CharClass c : classes) {
-            result += c.getLevel();
-        }
-        return result;
+    public HashMap<String, Integer> getClassLevels() {
+        return classLevels;
     }
 
     public int calculateProficiencyBonus() {
-        BigDecimal undividedValue = new BigDecimal(getCharacterLevel()).add(new BigDecimal(1));
-        BigDecimal unroundedValue = undividedValue.divide(new BigDecimal(4));
-        return unroundedValue.setScale(0, RoundingMode.FLOOR).intValue();
+        BigDecimal undividedValueNoBase = new BigDecimal(getCharacterLevel()).subtract(new BigDecimal(1));
+        BigDecimal unroundedValueNoBase = undividedValueNoBase.divide(new BigDecimal(4));
+        int roundedValueNoBase = unroundedValueNoBase.setScale(0, RoundingMode.FLOOR).intValue();
+        return roundedValueNoBase + 2;
     }
 
-    public int getClassesHitPoints() {
-        int result = 0;
-        for (CharClass c : classes) {
-            for (int i : c.getRolledHitPoints()) {
-                result += i;
-            }
-        }
-        return result;
+    public ArrayList<Feature> getFeatures() {
+        return features;
     }
 
     public ArrayList<InventoryItem> getEquippedItems() {
@@ -268,23 +221,32 @@ public class Character {
         return name;
     }
 
+    public int getCharacterLevel() {
+        int result = 0;
+        for (int i = 0; i < classes.size(); i++) {
+            result += classLevels.get(classes.get(i) + i);
+        }
+        return result;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
 
-    public void setRace(CharRace race) {
+    public void setRace(String race) {
         this.race = race;
-        reinitializeCharacter();
     }
 
-    public void setBackground(CharBackground background) {
+    public void setBackground(String background) {
         this.background = background;
-        reinitializeCharacter();
     }
-
+    
     public void addEquippedItem(InventoryItem item) {
         equippedItems.add(item);
         reinitializeCharacter();
+
+        Utility.logEvent("Item " + item.getName() + " added to character "
+                                                  + getName() + "'s equipment");
     }
 
     public void addCarriedItem(InventoryItem item) {
@@ -295,77 +257,125 @@ public class Character {
         inventoryItems.add(item);
     }
 
-    //MODIFIES: this
-    //EFFECTS: removes first item from equipped items that matches name
-    public void removeEquippedItem(String itemName) {
-        for (InventoryItem i : equippedItems) {
-            if (i.getName().equals(itemName)) {
-                equippedItems.remove(i);
-                updateScores();
-                break;
-            }
-        }
+    public void addFeature(Feature feature) {
+        features.add(feature);
         reinitializeCharacter();
+
+        Utility.logEvent("Feature " + feature.getName() + " added to character "
+                                                  + getName());
     }
 
     //MODIFIES: this
-    //EFFECTS: removes first item from carried items that matches name
-    public void removeCarriedItem(String itemName) {
-        for (InventoryItem i : carriedItems) {
-            if (i.getName().equals(itemName)) {
-                carriedItems.remove(i);
-                break;
-            }
-        }
+    //EFFECTS: removes the feature that matches the index passed in
+    public void removeFeature(int index) throws IndexOutOfBoundsException {
+        features.remove(index);
+        reinitializeCharacter();
     }
 
     //MODIFIES: this
     //EFFECTS: removes first item from inventory that matches name
-    public void removeInventoryItem(String itemName) {
-        for (InventoryItem i : inventoryItems) {
-            if (i.getName().equals(itemName)) {
-                inventoryItems.remove(i);
-                break;
+    public void removeFeature(String featureName) throws FeatureNotFoundException {
+        for (Feature f : features) {
+            if (f.getName().equals(featureName)) {
+                features.remove(f);
+                reinitializeCharacter();
+                return;
             }
         }
+        throw new FeatureNotFoundException();
     }
 
-    public void addClass(CharClass charClass) {
-        classes.add(charClass);
+    public void addClass(String className) {
+        classes.add(className);
+        classLevels.put(className + classes.indexOf(className), 1);
         reinitializeCharacter();
     }
 
-    public void removeClass(String className) {
-        for (CharClass c : classes) {
-            if (className.trim().equals(c.getName())) {
-                classes.remove(c);
-                break;
-            }
+    //MODIFIES: this
+    //EFFECTS: removes the first class that matches the name passed in
+    public void removeClass(String className) throws ClassNotFoundException {
+        if (classes.contains(className)) {
+            classLevels.remove(className + classes.indexOf(className));
+            classes.remove(className);
+            reinitializeCharacter();
+        } else {
+            throw new ClassNotFoundException();
         }
     }
 
-    public void removeClass(int index) {
+    //MODIFIES: this
+    //EFFECTS: removes the class that matches the index passed in
+    public void removeClass(int index) throws IndexOutOfBoundsException {
+        classLevels.remove(classes.get(index) + index);
         classes.remove(index);
         reinitializeCharacter();
     }
 
-    //REQUIRES: index must be in range for classes
     //MODIFIES: this
-    //EFFECTS: levels up on a certain class
-    public void levelUp(int index) {
-        if (index >= 0 && index < classes.size()) {
-            classes.get(index).levelUp();
+    //EFFECTS: increases the level of the first class that matches the name passed in by 1
+    public void levelUp(String className) throws ClassNotFoundException {
+        if (classes.contains(className)) {
+            String classKey = className + classes.indexOf(className);
+            classLevels.put(classKey, classLevels.get(classKey) + 1);
             reinitializeCharacter();
+        } else {
+            throw new ClassNotFoundException();
         }
     }
 
-    //REQUIRES: index must be in range for classes
     //MODIFIES: this
-    //EFFECTS: rolls bonus hit points for a certain class, if possible
-    public void rollClassHitPoints(int index) {
-        if (index >= 0 && index < classes.size()) {
-            classes.get(index).rollHitPoints();
+    //EFFECTS: increases the level of the class that matches the index passed in by 1
+    public void levelUp(int index) throws IndexOutOfBoundsException {
+        String classKey = classes.get(index) + index;
+        classLevels.put(classKey, classLevels.get(classKey) + 1);
+        reinitializeCharacter();
+    }
+
+    //MODIFIES: this
+    //EFFECTS: sets the level of the first class that matches the name passed in
+    public void setLevel(String className, int value) throws ClassNotFoundException {
+        if (classes.contains(className)) {
+            String classKey = className + classes.indexOf(className);
+            classLevels.put(classKey, value);
             reinitializeCharacter();
+        } else {
+            throw new ClassNotFoundException();
         }
+    }
+
+    //MODIFIES: this
+    //EFFECTS: sets the level of the class that matches the index passed in
+    public void setLevel(int index, int value) throws IndexOutOfBoundsException {
+        String classKey = classes.get(index) + index;
+        classLevels.put(classKey, value);
+        reinitializeCharacter();
+    }
+
+    @Override
+    public int hashCode() {
+        ArrayList<Integer> hashComponents = new ArrayList<>();
+        hashComponents.add(getName().hashCode());
+        hashComponents.add(Utility.hashIfAble(race));
+        hashComponents.add(Utility.hashIfAble(background));
+        hashComponents.add(classes.hashCode());
+        hashComponents.add(classLevels.hashCode());
+        hashComponents.add(rolledAbilityScores.hashCode());
+        hashComponents.add(features.hashCode());
+        hashComponents.add(equippedItems.hashCode());
+        hashComponents.add(carriedItems.hashCode());
+        hashComponents.add(inventoryItems.hashCode());
+        return Utility.hashCodeHelper(hashComponents, HASH_MULTIPLIER);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Character other = (Character) obj;
+        return (this.hashCode() == other.hashCode());
     }
 }

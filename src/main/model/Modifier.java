@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class Modifier {
+public class Modifier implements Cloneable {
     /// A representation of the ways you can modify a numerical value.
+    public static final int HASH_MULTIPLIER = 151;
+
     public static final ModifierType[] OPERATIONS_ORDER = {
             ModifierType.BASE,
             ModifierType.ADD,
@@ -32,8 +34,7 @@ public class Modifier {
         this.value = value;
     }
 
-    //REQUIRES: applyTo should be either same type, or base
-    //EFFECTS: applies this to another Modifier according to its type and returns the result
+    //EFFECTS: applies this to another Modifier according to the type of this and returns the result
     public Modifier apply(Modifier applyTo) {
         Modifier result = new Modifier(ModifierType.BASE,BigDecimal.ZERO);
         switch (type) {
@@ -43,10 +44,10 @@ public class Modifier {
             case MULTIPLY:
                 result = new Modifier(applyTo.getType(), applyTo.getValue().multiply(value));
                 break;
-            case MIN:
+            case MAX:
                 result = new Modifier(applyTo.getType(), applyTo.getValue().min(value));
                 break;
-            case MAX:
+            case MIN:
             case BASE:
                 result = new Modifier(applyTo.getType(), applyTo.getValue().max(value));
                 break;
@@ -74,5 +75,18 @@ public class Modifier {
         Modifier other = (Modifier) o;
         return (this.getValue().equals(other.getValue())
                 && this.getType().equals(other.getType()));
+    }
+
+    @Override
+    public int hashCode() {
+        int code = type.hashCode();
+        code *= HASH_MULTIPLIER;
+        code += value.hashCode();
+        return code;
+    }
+
+    @Override
+    protected Modifier clone() {
+        return new Modifier(this.getType(), new BigDecimal(this.getValue().unscaledValue(), this.getValue().scale()));
     }
 }

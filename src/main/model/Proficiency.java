@@ -1,11 +1,16 @@
 package model;
 
 import enums.*;
+import utility.Utility;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Proficiency {
+    ///A representation of a D&D Proficiency.
+    public static final int HASH_MULTIPLIER = 157;
+
     private final ProficiencyType type;
     private final ScoreType score;
     private final String item;
@@ -50,12 +55,42 @@ public class Proficiency {
             case SCORE:
                 return score.name();
             case ITEM:
+            default:
                 return item;
         }
-        return null;
+    }
+
+    public ScoreType getScore() {
+        return score;
+    }
+
+    public String getItem() {
+        return item;
     }
 
     public BigDecimal getMultiplier() {
         return multiplier;
+    }
+
+    @Override
+    public int hashCode() {
+        ArrayList<Integer> hashComponents = new ArrayList<>();
+        hashComponents.add(type.hashCode());
+        hashComponents.add(Utility.hashIfAble(score));
+        hashComponents.add(Utility.hashIfAble(item));
+        hashComponents.add(multiplier.hashCode());
+        return Utility.hashCodeHelper(hashComponents, HASH_MULTIPLIER);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Proficiency other = (Proficiency) obj;
+        return (this.hashCode() == other.hashCode());
     }
 }

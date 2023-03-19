@@ -1,7 +1,7 @@
 package enums;
 
 import model.Modifier;
-import utility.ListOfHelper;
+import utility.Utility;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public enum StatType {
+    /// An enumeration to capture the various composite-score stats that a Character can have.
     MAX_HIT_POINTS,
     CURRENT_HIT_POINTS,
     TEMPORARY_HIT_POINTS,
@@ -59,15 +60,6 @@ public enum StatType {
         return result;
     }
 
-    //EFFECTS: returns a Modifier version of an integer stat map
-    public static HashMap<StatType, Modifier> convertToModStats(HashMap<StatType, Integer> baseMap) {
-        HashMap<StatType, Modifier> result = new HashMap<>();
-        for (StatType s : baseMap.keySet()) {
-            result.put(s, new Modifier(baseMap.get(s)));
-        }
-        return result;
-    }
-
     //REQUIRES: all Modifiers in baseMap should be of type BASE; MAX_HIT_POINTS, INITIATIVE_BONUS, WALK_SPEED,
     //          DEXTERITY_ARMOR_BONUS, CARRY_CAPACITY should be keyed to values in baseMap
     //EFFECTS: derives certain stats from other stats to return a full HashMap
@@ -76,7 +68,7 @@ public enum StatType {
         result.put(MAX_HIT_POINTS, baseMap.get(MAX_HIT_POINTS));
         result.put(CURRENT_HIT_POINTS, baseMap.get(MAX_HIT_POINTS));
         result.put(TEMPORARY_HIT_POINTS, new Modifier(0));
-        result.put(HIT_POINT_CON_PER_LEVEL, new Modifier(1));
+        result.put(HIT_POINT_CON_PER_LEVEL, baseMap.get(HIT_POINT_CON_PER_LEVEL));
         result.put(INITIATIVE_BONUS, baseMap.get(INITIATIVE_BONUS));
         result.put(INITIATIVE, new Modifier(ModifierType.BASE, BigDecimal.TEN.add(
                 baseMap.get(INITIATIVE_BONUS).getValue())));
@@ -96,28 +88,18 @@ public enum StatType {
 
     //REQUIRES: all modifiers in base should be of type BASE, and every filled key in apply should also have a value
     //          in base
-    //EFFECTS: applies all stat changes from ArrayList of HashMap<StatType, Modifier> to one base HashMap
-    public static HashMap<StatType, Modifier> applyAllStatsToAll(HashMap<StatType, Modifier> base,
-                                                                   List<HashMap<StatType, Modifier>> apply) {
-        HashMap<StatType, Modifier> result = new HashMap<>();
-        for (StatType s : StatType.values()) {
-            result.put(s, base.get(s));
-        }
-        for (int i = 0; i < Modifier.OPERATIONS_ORDER.length; i++) {
-            for (HashMap<StatType, Modifier> stat : apply) {
-                result = applyStats(result, stat, Modifier.OPERATIONS_ORDER[i]);
-            }
-        }
-        return result;
-    }
-
-    //REQUIRES: all modifiers in base should be of type BASE, and every filled key in apply should also have a value
-    //          in base
-    //EFFECTS: applies all stat changes from ArrayList of HashMap<StatType, Modifier> to one base HashMap
+    //EFFECTS: applies all stat changes from ArrayList of HashMap<StatType, Modifier> to one base HashMap according to
+    //         a List of StatTypes
     public static HashMap<StatType, Modifier> applyAllStatsToList(HashMap<StatType, Modifier> base,
                                                                     List<HashMap<StatType, Modifier>> apply,
                                                                     List<StatType> statTypes) {
         HashMap<StatType, Modifier> result = new HashMap<>();
+        HashMap<StatType, Modifier> leftOvers = new HashMap<>();
+        for (StatType s : base.keySet()) {
+            if (!statTypes.contains(s)) {
+                leftOvers.put(s, base.get(s));
+            }
+        }
         for (StatType s : statTypes) {
             result.put(s, base.get(s));
         }
@@ -126,24 +108,7 @@ public enum StatType {
                 result = applyStats(result, stat, Modifier.OPERATIONS_ORDER[i]);
             }
         }
-        return result;
-    }
-
-    //REQUIRES: all modifiers in base should be of type BASE, and every filled key in apply should also have a value
-    //          in base
-    //EFFECTS: applies stat changes from one HashMap<StatType, Modifier> to another
-    public static HashMap<StatType, Modifier> applyStatsToAll(HashMap<StatType, Modifier> base,
-                                                                HashMap<StatType, Modifier> apply) {
-        HashMap<StatType, Modifier> result = new HashMap<>();
-        for (StatType s : StatType.values()) {
-            if (base.containsKey(s)) {
-                if (apply.containsKey(s)) {
-                    result.put(s, base.get(s).apply(apply.get(s)));
-                } else {
-                    result.put(s, base.get(s));
-                }
-            }
-        }
+        result.putAll(leftOvers);
         return result;
     }
 
@@ -169,9 +134,9 @@ public enum StatType {
 
     //EFFECTS: returns all stat types that are not used in deriveStats
     public static List<StatType> getNonDerivingStats() {
-        ArrayList<StatType> result = new ArrayList<>(ListOfHelper.listOf(StatType.values()));
-        result.removeAll(ListOfHelper.listOf(MAX_HIT_POINTS, INITIATIVE_BONUS, WALK_SPEED,
-                DEXTERITY_ARMOR_BONUS, CARRY_CAPACITY));
+        ArrayList<StatType> result = new ArrayList<>(Utility.listOf(StatType.values()));
+        result.removeAll(Utility.listOf(MAX_HIT_POINTS, INITIATIVE_BONUS, WALK_SPEED,
+                                        DEXTERITY_ARMOR_BONUS, CARRY_CAPACITY));
         return result;
     }
 }
